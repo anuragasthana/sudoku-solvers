@@ -1,0 +1,4 @@
+py-sudoku
+numpy
+torch
+matplotlib
