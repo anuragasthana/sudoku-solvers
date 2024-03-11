@@ -5,9 +5,10 @@ import os
 from tqdm import tqdm as progress_bar
 
 def check_data():
-    if not os.file.exists('data.npz'):
+    if not os.path.exists('data.npz'):
         generate()
     # put in dataloader to send to main
+    return np.load('data.npz', allow_pickle=True)
     
 
 def generate():
