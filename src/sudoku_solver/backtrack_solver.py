@@ -1,10 +1,14 @@
-from data_generate import check_data
+from .data_generate import check_data
 import numpy as np
 
-def check_valid(sudoku_board, row, column, num):
-    #Check row and column
+def check_cell_valid(sudoku_board, row, column, num):
+    # Check row and column
+    # Skips over the cell we are checking
     for i in range(9):
-        if ((sudoku_board[row][i] == num) or (sudoku_board[i][column] == num)):
+        if (sudoku_board[row][i] == num and i != column):
+            return False
+
+        if (sudoku_board[i][column] == num and i != row):
             return False
     
     #Check 3 by 3 box
@@ -12,9 +16,25 @@ def check_valid(sudoku_board, row, column, num):
     startColumn = column - column%3
     for i in range(3):
         for j in range(3):
-            if (sudoku_board[i + startRow][j + startColumn] == num):
+            r, c = i + startRow, j + startColumn
+            
+            # Skip over the cell we are checking
+            if r == row and c == column:
+                continue
+            
+            if (sudoku_board[r][c] == num):
                 return False
             
+    return True
+
+def check_board_valid(sudoku_board):
+    for i in range(9):
+        for j in range(9):
+            if (sudoku_board[i][j] == 0 or sudoku_board[i][j] == None):
+                continue
+
+            if (check_cell_valid(sudoku_board, i, j, sudoku_board[i][j]) == False):
+                return False
     return True
 
 def solve_sudoku(sudoku_board):
@@ -37,7 +57,7 @@ def solve_sudoku(sudoku_board):
     
     for num in range(1,10):
         #Place numbers on the board
-        if (check_valid(sudoku_board, rowEmpty, columnEmpty, num)):
+        if (check_cell_valid(sudoku_board, rowEmpty, columnEmpty, num)):
             sudoku_board[rowEmpty][columnEmpty] = num
 
             #Apply recursion until sudoku is solved when emptySquare == False indicating no more empty squares left
@@ -53,19 +73,22 @@ def check_correct(sudoku_board, solution):
             print("Sudoku Solved Correctly")
         else:
             print("Sudoku Solved Incorrectly")
+
+            print("Sudoku Board: ")
+            print(sudoku_board)
+            
+            print("Solution: ")
+            print(solution)
+            
+            our_solution_valid = check_board_valid(sudoku_board)
+            if (our_solution_valid):
+                print("Our solution is valid")
+            else:
+                print("Our solution is invalid")
+            
         #print(sudoku_board)
     else:
         print("No solution exists - Should be impossible by assumption")
-
-loaded_sudoku_data = check_data()
-loaded_sudoku_puzzles = loaded_sudoku_data['inputs']
-loaded_sudoku_solutions = loaded_sudoku_data['labels']
-
-for i in range(100):
-    puzzle = loaded_sudoku_puzzles[i]
-    solution = loaded_sudoku_solutions[i]
-    check_correct(sudoku_board=puzzle, solution=solution)
-
 
 #Example of a sudoku board that can be used for testing
 # sudoku_board = [
