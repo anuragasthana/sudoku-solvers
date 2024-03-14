@@ -81,7 +81,7 @@ def generate(n = 10000):
     
     for _, _ in progress_bar(enumerate(range(n)), total=n):
         puzzle = Sudoku(3).difficulty(np.random.uniform(.25, .75))
-        inputs.append(np.array(puzzle))
+        inputs.append(np.array(puzzle.board))
         
         solution = puzzle.solve()
         labels.append(np.array(solution.board))
