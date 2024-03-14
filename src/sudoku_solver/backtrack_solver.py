@@ -1,4 +1,4 @@
-from .data_generate import check_data
+from .data import check_data
 import numpy as np
 
 def check_cell_valid(sudoku_board, row, column, num):
@@ -86,7 +86,6 @@ def check_correct(sudoku_board, solution):
             else:
                 print("Our solution is invalid")
             
-        #print(sudoku_board)
     else:
         print("No solution exists - Should be impossible by assumption")
 

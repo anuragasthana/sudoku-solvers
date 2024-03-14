@@ -1,5 +1,5 @@
 from sudoku_solver.backtrack_solver import check_board_valid, check_cell_valid
-from sudoku_solver.data_generate import check_data
+from sudoku_solver.data import check_data
 
 def board_to_string(puzzle, replace_none=False):
     o=""
