@@ -5,7 +5,7 @@ from sudoku_solver.data import get_dataloaders
 if __name__ == "__main__":
     
     params = Hyperparams()
-    data = get_dataloaders()
+    data = get_dataloaders(params)
     
     model = train(data, params)
     

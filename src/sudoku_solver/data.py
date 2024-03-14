@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 import os
 from tqdm import tqdm as progress_bar
 
+from sudoku_solver.config import Hyperparams
+
 # Returns label one hot encoded
 class SudokuDataset(Dataset):
     def __init__(self, data):
@@ -50,10 +52,10 @@ class SudokuDataloaders():
         self.test = test
         self.validation = validation
 
-def get_dataloaders(batch_size = 32):
+def get_dataloaders(params: Hyperparams, batch_size = 32):
     
     # put in dataloader to send to main
-    data = check_data()
+    data = check_data(params=params)
     split = split_data(data)
     
     train = DataLoader(SudokuDataset(split['train']), batch_size=batch_size, shuffle=True)
@@ -68,19 +70,19 @@ def get_dataloaders(batch_size = 32):
     return SudokuDataloaders(train=train, test=test, validation=validation)
 
 
-def check_data(path='data.npz'):
+def check_data(params, path='data.npz'):
     if not os.path.exists(path):
-        generate()
+        generate(params)
     # put in dataloader to send to main
     return np.load(path, allow_pickle=True)
     
 
-def generate(n = 10000):
+def generate(params: Hyperparams):
     inputs = []
     labels = []
     
-    for _, _ in progress_bar(enumerate(range(n)), total=n):
-        puzzle = Sudoku(3).difficulty(np.random.uniform(.25, .75))
+    for _, _ in progress_bar(enumerate(range(params.samples)), total=params.samples, desc="Generating data"):
+        puzzle = Sudoku(3).difficulty(np.random.uniform(params.min_difficulty, params.max_difficulty))
         inputs.append(np.array(puzzle.board))
         
         solution = puzzle.solve()

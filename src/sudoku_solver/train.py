@@ -36,9 +36,6 @@ def train(data: SudokuDataloaders, params: Hyperparams):
     
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
-    
-    # TODO: Warning, assuming CEL for one-hot categories but model outputs 81 scalar values (1->9)
-    # TODO: Determine, do we want to one hot encode the features and the labels, just the labels, or not at all?
     criterion = nn.CrossEntropyLoss()
     early_stopper = EarlyStopper(params.patience)
 

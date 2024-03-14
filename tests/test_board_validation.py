@@ -1,4 +1,6 @@
+import random
 from sudoku_solver.backtrack_solver import check_board_valid, check_cell_valid
+from sudoku_solver.config import Hyperparams
 from sudoku_solver.data import check_data
 from sudoku_solver.board import board_to_string
 
@@ -30,3 +32,19 @@ def test_validate_cell():
                 continue
             
             assert check_cell_valid(p, i, j, p[i][j]) == True, "Cell " + str(i) + ", " + str(j) + " is invalid: " + str(p[i][j])
+
+def test_errors_detected():
+    print("Testing board validation detects errors")
+    
+    loaded_sudoku_data = check_data(Hyperparams())
+    loaded_sudoku_solutions = loaded_sudoku_data['labels']
+
+    for i in range(100):
+        p = loaded_sudoku_solutions[i].copy()
+        
+        # introduce an error
+        x, y = random.randint(0, 8), random.randint(0, 8)
+        p[x][y] = (p[x][y] + 1) % 9 + 1
+        
+        assert check_board_valid(p) == False, "Board " + str(i) + " evaded detection: \n" + board_to_string(p, True)
+        print("Test passed for invalid board ", i)
