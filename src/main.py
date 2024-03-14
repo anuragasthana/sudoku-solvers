@@ -9,9 +9,9 @@ if __name__ == "__main__":
         print("Invalid number of arguments provided")
         exit(1)
 
-    args = check_config(sys.argv[1])
+    kwargs = check_config(sys.argv[1])
     
-    params = Hyperparams(**args)
+    params = Hyperparams(**kwargs)
     data = get_dataloaders(params)
     
     model = train(data, params)
