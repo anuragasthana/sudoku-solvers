@@ -40,6 +40,8 @@ def train(data: SudokuDataloaders, params: Hyperparams):
 
     # Iterate over epochs
     for epoch in range(params.epochs):
+        
+        # GH Copilot autogen
         print(f"Epoch {epoch+1}/{params.epochs}")
         
         # Iterate over batches
