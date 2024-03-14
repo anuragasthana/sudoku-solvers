@@ -5,32 +5,55 @@ from torch.utils.data import Dataset, DataLoader
 import os
 from tqdm import tqdm as progress_bar
 
+# Returns label one hot encoded
 class SudokuDataset(Dataset):
     def __init__(self, data):
-        self.inputs = data['inputs']
-        self.labels = data['labels']
+        assert len(data['inputs']) == len(data['labels']), "Inputs and labels must be the same length"
+        assert isinstance(data['inputs'], np.ndarray), "Inputs must be a numpy array"
+        assert isinstance(data['labels'], np.ndarray), "Labels must be a numpy array"
+        
+        assert data['inputs'].shape[1:] == (9, 9), "Inputs must be 9x9"
+        assert data['labels'].shape[1:] == (9, 9), "Labels must be 9x9"
+        
+        # Replace None with 0 in inputs
+        inputs = data['inputs'].copy()
+        inputs[inputs == None] = 0
+        inputs = inputs.astype(np.float32)
+        
+        labels = data['labels'].astype(np.int64)
+        # labels = one_hot_encode(labels)
+        
+        self.inputs = inputs
+        self.labels = labels
         
     def __len__(self):
         return len(self.inputs)
     
     def __getitem__(self, idx):
+        labels = self.labels[idx]-1
+        labels = labels.reshape(-1)
         
-        print(self.inputs[idx])
-        print(self.labels[idx])
-        print("----")
-        
-        return self.inputs[idx], self.labels[idx]
+        return self.inputs[idx], labels
+
+# https://stackoverflow.com/questions/36960320/convert-a-2d-matrix-to-a-3d-one-hot-matrix-numpy
+def one_hot_encode(a, n_cat = 9):
+    return (np.arange(n_cat) == a[...,None]-1).astype(int)
+
+def one_hot_decode(a):
+    return (np.argmax(a, axis=-1) + 1)
+    
 
 class SudokuDataloaders():
+    
     def __init__(self, train: DataLoader, test: DataLoader, validation: DataLoader):
         self.train = train
         self.test = test
         self.validation = validation
 
-def get_dataloaders(datafile='data.npz', batch_size = 32):
+def get_dataloaders(batch_size = 32):
     
     # put in dataloader to send to main
-    data = check_data(datafile)
+    data = check_data()
     split = split_data(data)
     
     train = DataLoader(SudokuDataset(split['train']), batch_size=batch_size, shuffle=True)
@@ -45,22 +68,20 @@ def get_dataloaders(datafile='data.npz', batch_size = 32):
     return SudokuDataloaders(train=train, test=test, validation=validation)
 
 
-def check_data(path):
+def check_data(path='data.npz'):
     if not os.path.exists(path):
         generate()
     # put in dataloader to send to main
     return np.load(path, allow_pickle=True)
     
 
-def generate(nan_value = 0.0):
+def generate(n = 10000):
     inputs = []
     labels = []
-    for _, _ in progress_bar(enumerate(range(100000)), total=100000):
+    
+    for _, _ in progress_bar(enumerate(range(n)), total=n):
         puzzle = Sudoku(3).difficulty(np.random.uniform(.25, .75))
-        
-        # Make sure to save the puzzle with the nan_val instead of NaNs
-        puzzle_board_with_zeroes = np.nan_to_num(puzzle.board, nan=nan_value)
-        inputs.append(np.array(puzzle_board_with_zeroes))
+        inputs.append(np.array(puzzle))
         
         solution = puzzle.solve()
         labels.append(np.array(solution.board))

@@ -1,21 +1,6 @@
 from sudoku_solver.backtrack_solver import check_board_valid, check_cell_valid
 from sudoku_solver.data import check_data
-
-def board_to_string(puzzle, replace_none=False):
-    o=""
-    for i in range(9):
-        for j in range(9):
-            if puzzle[i][j] == None:
-                if replace_none:
-                    o += "0 "
-                else:
-                    o += "None "
-            else:
-                o += str(puzzle[i][j]) + " "
-        
-        o += "\n"
-    
-    return o
+from sudoku_solver.board import board_to_string
 
 def test_validate_board():
     print("Testing board validation")

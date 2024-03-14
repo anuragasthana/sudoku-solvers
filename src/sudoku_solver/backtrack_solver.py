@@ -1,4 +1,5 @@
 from .data import check_data
+from .board import board_to_string
 import numpy as np
 
 def check_cell_valid(sudoku_board, row, column, num):
@@ -35,6 +36,20 @@ def check_board_valid(sudoku_board):
 
             if (check_cell_valid(sudoku_board, i, j, sudoku_board[i][j]) == False):
                 return False
+    return True
+
+def check_board_solved(sudoku_board):
+    assert (type(sudoku_board) == np.ndarray), "Input must be a numpy array"
+    assert (sudoku_board.shape == (9, 9)), "Input must be 9x9"
+
+    # Every cell needs to be filled and valid
+    for i in range(9):
+        for j in range(9):
+            if (sudoku_board[i][j] == 0 or sudoku_board[i][j] == None):
+                return False
+            if (not check_cell_valid(sudoku_board, i, j, sudoku_board[i][j])):
+                return False
+    
     return True
 
 def solve_sudoku(sudoku_board):

@@ -1,6 +1,8 @@
+from sudoku_solver.validation import validate_board
 from .config import Hyperparams
 from .data import SudokuDataloaders
 from .model import SudokuCNN
+from .backtrack_solver import check_board_solved
 
 from torch import nn, optim
 from torch.utils.data import DataLoader as Dataloader
@@ -35,7 +37,9 @@ def train(data: SudokuDataloaders, params: Hyperparams):
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
     
-    criterion = nn.CrossEntropyLoss() #TODO: Warning, assuming CEL for one-hot categories but model outputs 81 scalar values (1->9)
+    # TODO: Warning, assuming CEL for one-hot categories but model outputs 81 scalar values (1->9)
+    # TODO: Determine, do we want to one hot encode the features and the labels, just the labels, or not at all?
+    criterion = nn.CrossEntropyLoss()
     early_stopper = EarlyStopper(params.patience)
 
     # Iterate over epochs
@@ -45,26 +49,33 @@ def train(data: SudokuDataloaders, params: Hyperparams):
         print(f"Epoch {epoch+1}/{params.epochs}")
         
         # Iterate over batches
+        cum_loss = 0
         for inputs, labels in data.train:
             # Zero the parameter gradients
             optimizer.zero_grad()
             
             # Forward pass
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
+            
+            # Combine x and y dims (1, 2) and swap classes and length (2, 1)
+            loss = get_loss(criterion, labels, outputs)
             
             # Backward pass
             loss.backward()
             optimizer.step()
             
-            # Print statistics
-            print(f"Loss: {loss.item()}")
+            cum_loss += loss.item()
+        
+        print(f"Average training loss: {cum_loss/len(data.train)}")
         
         # Get validation accuracy and loss
         # GH Copilot autogen
-        percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion)
+        percent_puzzles_solved, percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion)
         print(f"Validation accuracy: {percent_correct}%")
         print(f"Validation loss: {ave_val_loss}")
+        print(f"Percent puzzles solved: {percent_puzzles_solved}%")
+        
+        print(f"---------------------------------------")
         
         # Use early stopping
         early_stopper(ave_val_loss)
@@ -73,34 +84,49 @@ def train(data: SudokuDataloaders, params: Hyperparams):
             break
         
         # Save model weights after each epoch
-        torch.save(model.state_dict(), f"model_epoch_{epoch}.pth")
+        torch.save(model.state_dict(), f"artifacts/models/model_epoch_{epoch}.pth")
         
     return model
 
+# Involves weird reshaping
+def get_loss(criterion, labels, outputs):
+    outputs = outputs.permute(0, 2, 1)
+    loss = criterion(outputs, labels)
+    return loss
+
 def test(data: SudokuDataloaders, model: nn.Module):
     
-    percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
+    percent_puzzles_solved, percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
     print(f"Test accuracy: {percent_correct}%")
     print(f"Test loss: {ave_test_loss}")
+    print(f"Percent puzzles solved: {percent_puzzles_solved}%")
 
 def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module):
     # Get validation accuracy and loss
     # GH Copilot autogen
-    correct = 0
-    total = 0
+    cells_correct = 0
+    puzzles_solved = 0
+    total_puzzles = 0
     val_loss = 0
     with torch.no_grad():
         for inputs, labels in dataloader:
             outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            _, predicted = torch.max(outputs.data, 2)
+            
+            total_puzzles += labels.size(0)
+            cells_correct += (predicted == labels).sum().item()
+            
+            # Unpack board shape into 9x9
+            predicted_unpacked = (predicted+1).view(-1, 9, 9)
+            puzzles_solved += validate_board(predicted_unpacked, inputs.to(torch.int64))
             
             # Get loss
-            loss = criterion(outputs, labels)
+            loss = get_loss(criterion, labels, outputs)
             val_loss += loss.item()
+            
     ave_val_loss = val_loss/len(dataloader)
-    percent_correct = 100 * correct / total
+    percent_correct = 100 * cells_correct / total_puzzles / 81
+    percent_puzzles_solved = 100 * puzzles_solved / total_puzzles
     
-    return percent_correct, ave_val_loss
+    return percent_puzzles_solved, percent_correct, ave_val_loss
     
