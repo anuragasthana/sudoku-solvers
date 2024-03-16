@@ -27,12 +27,13 @@ class EarlyStopper:
             self.best_loss = loss
             self.counter = 0
 
-def train(data: SudokuDataloaders, params: Hyperparams):
+def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None):
     print("Training with hyperparameters:")
     print(params)
     
     # Create model
-    model = SudokuCNN()
+    if model is None:
+        model = SudokuCNN()
     
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
@@ -105,6 +106,7 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     puzzles_solved = 0
     total_puzzles = 0
     val_loss = 0
+    
     with torch.no_grad():
         for inputs, labels in dataloader:
             outputs = model(inputs)
