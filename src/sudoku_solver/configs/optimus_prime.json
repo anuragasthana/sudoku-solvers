@@ -7,5 +7,5 @@
     "samples": 10000,
     "min_difficulty": 0,
     "max_difficulty": 1,
-    "model": "CNN"
+    "model": "Transformer"
 }

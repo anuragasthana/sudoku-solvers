@@ -17,6 +17,7 @@ class Hyperparams(BaseModel):
     max_difficulty: int = 1
     
     datasplit: list = [0.8, 0.1, 0.1]
+    model: str = 'CNN'
     
     # etc. etc. etc.
 

@@ -3,6 +3,7 @@ numpy
 torch
 matplotlib
 tdqm
+transformers
 
 pytest
 pydantic
