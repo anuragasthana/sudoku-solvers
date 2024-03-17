@@ -1,12 +1,14 @@
 from sudoku_solver.validation import validate_board
 from .config import Hyperparams
 from .data import SudokuDataloaders
-from .model import SudokuCNN
+from .model import SudokuCNN, SudokuTransformer
 from .backtrack_solver import check_board_solved
 
 from torch import nn, optim
 from torch.utils.data import DataLoader as Dataloader
 import torch
+from tqdm import tqdm as progress_bar
+
 
 # GH Copilot autogen
 class EarlyStopper:
@@ -27,12 +29,14 @@ class EarlyStopper:
             self.best_loss = loss
             self.counter = 0
 
-def train(data: SudokuDataloaders, params: Hyperparams):
+def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None):
     print("Training with hyperparameters:")
     print(params)
     
-    # Create model
-    model = SudokuCNN()
+    if params.model == 'CNN':
+        model = SudokuCNN()
+    else:
+        model = SudokuTransformer()
     
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
@@ -47,7 +51,7 @@ def train(data: SudokuDataloaders, params: Hyperparams):
         
         # Iterate over batches
         cum_loss = 0
-        for inputs, labels in data.train:
+        for _, (inputs, labels) in progress_bar(enumerate(data.train), total=len(data.train)):
             # Zero the parameter gradients
             optimizer.zero_grad()
             
@@ -105,6 +109,7 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     puzzles_solved = 0
     total_puzzles = 0
     val_loss = 0
+    
     with torch.no_grad():
         for inputs, labels in dataloader:
             outputs = model(inputs)
