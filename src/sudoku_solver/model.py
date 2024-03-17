@@ -37,3 +37,7 @@ class SudokuCNN(nn.Module):
         x = x.view(-1, 81, 9)
         
         return x
+    
+class Curriculum(nn.Module):
+    def __init__(self):
+        pass
