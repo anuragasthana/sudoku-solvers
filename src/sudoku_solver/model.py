@@ -1,5 +1,7 @@
+import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
+from transformers import ViTConfig, ViTModel
 
 class SudokuCNN(nn.Module):
     def __init__(self):
@@ -38,6 +40,34 @@ class SudokuCNN(nn.Module):
         
         return x
     
-class Curriculum(nn.Module):
+class SudokuTransformer(nn.Module):
     def __init__(self):
-        pass
+        super(SudokuTransformer, self).__init__()
+        config = ViTConfig(hidden_size=768, 
+                           num_hidden_layers=12, 
+                           num_attention_heads=12, 
+                           num_channels=1,
+                           patch_size=1, 
+                           image_size=9)
+        self.encoder = ViTModel(config)
+        self.decoder = nn.Sequential(
+            nn.Conv1d(82, 32, 1),
+            nn.ReLU(),
+            nn.Conv1d(32, 1, 1),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(768, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 512),
+            nn.ReLU(),
+            nn.Linear(512, 81*9)
+        )
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = self.encoder(x)[0]
+        x = self.decoder(x)
+        x = x.view(-1, 81, 9)
+        return x

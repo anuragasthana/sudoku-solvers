@@ -47,27 +47,25 @@ def one_hot_decode(a):
 
 class SudokuDataloaders():
     
-    def __init__(self, train: DataLoader, test: DataLoader, validation: DataLoader):
+    def __init__(self, params: Hyperparams, data=None, batch_size = 32):
+        # put in dataloader to send to main
+        if data is None:
+            data = check_data(params=params)
+        
+        split = split_data(data, split=params.datasplit)
+        
+        train = DataLoader(SudokuDataset(split['train']), batch_size=batch_size, shuffle=True)
+        test = DataLoader(SudokuDataset(split['test']), batch_size=batch_size, shuffle=True)
+        validation = DataLoader(SudokuDataset(split['validation']), batch_size=batch_size, shuffle=True)
+        
+        # Print sizes
+        print(f"Train size: {len(train.dataset)}")
+        print(f"Test size: {len(test.dataset)}")
+        print(f"Validation size: {len(validation.dataset)}")
+        
         self.train = train
         self.test = test
         self.validation = validation
-
-def get_dataloaders(params: Hyperparams, batch_size = 32):
-    
-    # put in dataloader to send to main
-    data = check_data(params=params)
-    split = split_data(data)
-    
-    train = DataLoader(SudokuDataset(split['train']), batch_size=batch_size, shuffle=True)
-    test = DataLoader(SudokuDataset(split['test']), batch_size=batch_size, shuffle=True)
-    validation = DataLoader(SudokuDataset(split['validation']), batch_size=batch_size, shuffle=True)
-    
-    # Print sizes
-    print(f"Train size: {len(train.dataset)}")
-    print(f"Test size: {len(test.dataset)}")
-    print(f"Validation size: {len(validation.dataset)}")
-    
-    return SudokuDataloaders(train=train, test=test, validation=validation)
 
 
 def check_data(params, path='data.npz'):
@@ -90,7 +88,7 @@ def generate(params: Hyperparams):
     np.savez('data.npz', inputs=inputs, labels=labels)
     print("Data saved")
 
-
+# Train, test, validate split
 def split_data(data, split = [0.8, 0.1, 0.1]):
     
     assert len(split) == 3, "Split must be a list of 3 values"
@@ -108,3 +106,26 @@ def split_data(data, split = [0.8, 0.1, 0.1]):
     o['validation'] = {'inputs': data['inputs'][train+test:], 'labels': data['labels'][train+test:]}
     
     return o
+
+def load_kaggle_data(params: Hyperparams):
+    with open('artifacts/puzzles/sudoku-3m.csv') as f:
+        puzzles = f.readlines()[1:]
+        
+        # Convert into labels and inputs
+        
+        inputs = []
+        labels = []
+        
+        for line in puzzles[:params.samples]:
+            line = line.strip().split(',')
+            
+            # Convert to 9x9
+            input = np.array([0 if c == '.' else int(c) for c in line[1]]).reshape(9,9)
+            label = np.array([int(c) for c in line[2]]).reshape(9,9)
+            
+            inputs.append(input)
+            labels.append(label)
+        
+        data = {'inputs': np.array(inputs), 'labels': np.array(labels)}
+        
+        return data
