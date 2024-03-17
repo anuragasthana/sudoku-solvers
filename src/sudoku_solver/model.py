@@ -1,5 +1,8 @@
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
+import torch
+import torch.nn.functional as F
+
 
 class SudokuCNN(nn.Module):
     def __init__(self):
@@ -37,3 +40,44 @@ class SudokuCNN(nn.Module):
         x = x.view(-1, 81, 9)
         
         return x
+    
+class SudokuRNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, num_layers):
+        super(SudokuRNN, self).__init__()
+
+        self.input_size = input_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.num_layers = num_layers
+        
+        # Define encoder
+        self.encoder = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers)
+        
+        # Define decoder
+        self.decoder = nn.LSTM(input_size=output_size, hidden_size=hidden_size, num_layers=num_layers)
+        
+        # Output layer
+        self.linear = nn.Linear(hidden_size, output_size)
+
+    def forward(self, input_seq):
+        # Encoder forward pass
+        _, (encoder_hidden, _) = self.encoder(input_seq)
+        
+        # Decoder initial hidden state (initialized with encoder's final hidden state)
+        decoder_hidden = encoder_hidden
+        
+        # Initialize decoder input with SOS token
+        decoder_input = torch.zeros(1, input_seq.size(1), self.output_size)  # SOS token
+        
+        # Output container
+        outputs = []
+        
+        # Decoder forward pass
+        for i in range(input_seq.size(1)):
+            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden)
+            decoder_output = self.linear(decoder_output.squeeze(0))
+            outputs.append(decoder_output)
+            decoder_input = F.one_hot(torch.argmax(decoder_output, dim=1), num_classes=self.output_size).unsqueeze(0)
+
+        outputs = torch.stack(outputs, dim=1)
+        return outputs
