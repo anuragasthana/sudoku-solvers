@@ -32,15 +32,15 @@ class SudokuCNN(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
-        
+        print(x.shape)
         # Set x to its own channel
         x = x.unsqueeze(1)
-        
+        print(x.shape)
         x = self.model(x)
-        
+        print(x.shape)
         # Convert back to 81x9
         x = x.view(-1, 81, 9)
-        
+        print(x.shape)
         return x
     
 class SudokuTransformer(nn.Module):
@@ -76,42 +76,40 @@ class SudokuTransformer(nn.Module):
         return x
     
 class SudokuRNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, num_layers):
+    def __init__(self, model_type = "RNN", hidden_size=300, num_layers=10):
         super(SudokuRNN, self).__init__()
 
-        self.input_size = input_size
+        self.input_size = 9
         self.hidden_size = hidden_size
-        self.output_size = output_size
+        self.output_size = 81*9
         self.num_layers = num_layers
+        self.model_type = model_type
         
         # Define encoder
-        self.encoder = nn.LSTM(input_size=input_size, hidden_size=hidden_size, num_layers=num_layers)
+        if (self.model_type == "LSTM"):
+            self.encoder = nn.LSTM(input_size=self.input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+        elif (self.model_type == "GRU"):
+            self.encoder = nn.GRU(input_size=self.input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
+        else:
+            self.encoder = nn.RNN(input_size=self.input_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=True)
         
-        # Define decoder
-        self.decoder = nn.LSTM(input_size=output_size, hidden_size=hidden_size, num_layers=num_layers)
-        
-        # Output layer
-        self.linear = nn.Linear(hidden_size, output_size)
+        # Linear layer to reshape decoder output
+        self.linear = nn.Linear(hidden_size, self.output_size)
 
     def forward(self, input_seq):
-        # Encoder forward pass
-        _, (encoder_hidden, _) = self.encoder(input_seq)
-        
-        # Decoder initial hidden state (initialized with encoder's final hidden state)
-        decoder_hidden = encoder_hidden
-        
-        # Initialize decoder input with SOS token
-        decoder_input = torch.zeros(1, input_seq.size(1), self.output_size)  # SOS token
-        
-        # Output container
-        outputs = []
-        
-        # Decoder forward pass
-        for i in range(input_seq.size(1)):
-            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden)
-            decoder_output = self.linear(decoder_output.squeeze(0))
-            outputs.append(decoder_output)
-            decoder_input = F.one_hot(torch.argmax(decoder_output, dim=1), num_classes=self.output_size).unsqueeze(0)
+        batch_size = input_seq.size(0)
+        _, encoder_hidden = self.encoder(input_seq.view(batch_size, -1, self.input_size))
 
-        outputs = torch.stack(outputs, dim=1)
+        if (self.model_type == "LSTM"):
+            encoder_hidden, cell_state = encoder_hidden
+        
+        encoder_hidden = encoder_hidden.view(self.num_layers, batch_size, -1)
+        
+        # Take the hidden state from the last layer
+        last_layer_hidden = encoder_hidden[-1]
+        
+        # Apply linear layer to reshape decoder output
+        outputs = self.linear(last_layer_hidden)
+        outputs = outputs.view(-1, 81, 9)
+        
         return outputs
