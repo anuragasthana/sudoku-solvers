@@ -12,7 +12,7 @@ class Hyperparams(BaseModel):
     early_stopping: bool = True
     patience: int = 5
 
-    samples: int = 100000
+    samples: int = 10000
     min_difficulty: int = 0
     max_difficulty: int = 1
     

@@ -29,7 +29,7 @@ class EarlyStopper:
             self.best_loss = loss
             self.counter = 0
 
-def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None):
+def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module = None):
     print("Training with hyperparameters:")
     print(params)
     
@@ -37,6 +37,7 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
         model = SudokuCNN()
     else:
         model = SudokuTransformer()
+    model = model.to(device)
     
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
@@ -56,6 +57,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
             optimizer.zero_grad()
             
             # Forward pass
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             outputs = model(inputs)
             
             # Combine x and y dims (1, 2) and swap classes and length (2, 1)
@@ -112,6 +115,8 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     
     with torch.no_grad():
         for inputs, labels in dataloader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 2)
             
