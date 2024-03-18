@@ -32,15 +32,11 @@ class SudokuCNN(nn.Module):
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):
-        print(x.shape)
         # Set x to its own channel
         x = x.unsqueeze(1)
-        print(x.shape)
         x = self.model(x)
-        print(x.shape)
         # Convert back to 81x9
         x = x.view(-1, 81, 9)
-        print(x.shape)
         return x
     
 class SudokuTransformer(nn.Module):
