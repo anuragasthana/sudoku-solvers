@@ -1,3 +1,4 @@
+from sudoku_solver.plot import create_plots
 from sudoku_solver.train import train, test, get_model_performance
 from sudoku_solver.config import Hyperparams, check_config
 import sys
@@ -20,9 +21,11 @@ if __name__ == "__main__":
         print("Running on CPU")
     
     gen_data = SudokuDataloaders(params)
-    model = train(gen_data, params, device)
-    test(gen_data, model, device)
+    model, results = train(gen_data, params, device)
+    test(gen_data, model, device, results)
     
     # k_data = SudokuDataloaders(params, data=load_kaggle_data(params))
     # model = train(k_data, params, model=model) 
     # test(k_data, model)
+    
+    create_plots(results)
