@@ -30,7 +30,7 @@ def create_plots(results: Results):
     plt.plot(training_loss)
     plt.xlabel("Epoch")
     plt.ylabel("Training Loss")
-    plt.title("Training Loss Per Epoch")
+    plt.title(results.params.model + " Training Loss Per Epoch")
     plt.xticks(np.arange(0, len(training_loss), step=1))  # Set x-axis ticks with increments of 1
     save_plot(results.params.model + "_training_loss.png")
     
@@ -39,7 +39,7 @@ def create_plots(results: Results):
     plt.plot(val_loss)
     plt.xlabel("Epoch")
     plt.ylabel("Validation Loss")
-    plt.title("Validation Loss Per Epoch")
+    plt.title(results.params.model + " Validation Loss Per Epoch")
     plt.xticks(np.arange(0, len(val_loss), step=1))  # Set x-axis ticks with increments of 1
     save_plot(results.params.model + "_validation_loss.png")
     
@@ -48,7 +48,7 @@ def create_plots(results: Results):
     plt.plot(val_acc)
     plt.xlabel("Epoch")
     plt.ylabel("Validation Accuracy")
-    plt.title("Validation Accuracy Per Epoch")
+    plt.title(results.params.model + " Validation Accuracy Per Epoch")
     plt.xticks(np.arange(0, len(val_acc), step=1))  # Set x-axis ticks with increments of 1
     save_plot(results.params.model + "_validation_accuracy.png")
     
@@ -57,7 +57,7 @@ def create_plots(results: Results):
     plt.plot(boards_solved)
     plt.xlabel("Epoch")
     plt.ylabel("Percent Boards Solved")
-    plt.title("Percent Boards Solved Per Epoch")
+    plt.title(results.params.model + " Percent Boards Solved Per Epoch")
     plt.xticks(np.arange(0, len(boards_solved), step=1))  # Set x-axis ticks with increments of 1
     save_plot(results.params.model + "_boards_solved.png")
     
