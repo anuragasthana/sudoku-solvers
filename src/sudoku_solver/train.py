@@ -1,7 +1,7 @@
 from sudoku_solver.validation import validate_board
 from .config import Hyperparams
 from .data import SudokuDataloaders
-from .model import SudokuCNN, SudokuTransformer
+from .model import SudokuCNN, SudokuTransformer, SudokuRNN
 from .backtrack_solver import check_board_solved
 
 from torch import nn, optim
@@ -35,6 +35,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
     
     if params.model == 'CNN':
         model = SudokuCNN()
+    elif params.model == 'RNN':
+        model = SudokuRNN()
     else:
         model = SudokuTransformer()
     
