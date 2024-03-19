@@ -51,15 +51,14 @@ class SudokuTransformer(nn.Module):
                            image_size=9)
         self.encoder = ViTModel(config)
         self.decoder = nn.Sequential(
-            nn.Conv1d(82, 32, 1),
-            nn.ReLU(),
-            nn.Conv1d(32, 1, 1),
+            nn.Conv1d(82, 1, 1),
             nn.ReLU(),
             nn.Flatten(),
             nn.Linear(768, 512),
             nn.ReLU(),
             nn.Linear(512, 256),
             nn.ReLU(),
+            nn.Dropout(0.1),
             nn.Linear(256, 512),
             nn.ReLU(),
             nn.Linear(512, 81*9)

@@ -97,8 +97,8 @@ def get_loss(criterion, labels, outputs):
 
 def test(data: SudokuDataloaders, model: nn.Module):
     
-    percent_puzzles_solved, percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
-    print(f"Test accuracy: {percent_correct}%")
+    percent_puzzles_solved, percent_cells_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
+    print(f"Test accuracy: {percent_cells_correct}%")
     print(f"Test loss: {ave_test_loss}")
     print(f"Percent puzzles solved: {percent_puzzles_solved}%")
 
@@ -113,7 +113,7 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     with torch.no_grad():
         for inputs, labels in dataloader:
             outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 2)
+            predicted = torch.argmax(outputs.data, 2)
             
             total_puzzles += labels.size(0)
             cells_correct += (predicted == labels).sum().item()
@@ -127,8 +127,8 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
             val_loss += loss.item()
             
     ave_val_loss = val_loss/len(dataloader)
-    percent_correct = 100 * cells_correct / total_puzzles / 81
+    percent_cells_correct = 100 * cells_correct / total_puzzles / 81
     percent_puzzles_solved = 100 * puzzles_solved / total_puzzles
-    
-    return percent_puzzles_solved, percent_correct, ave_val_loss
+
+    return percent_puzzles_solved, percent_cells_correct, ave_val_loss
     
