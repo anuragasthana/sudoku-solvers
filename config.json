@@ -1,4 +1,5 @@
 {
     "model": "CNN",
-    "epochs": 1
+    "epochs": 1,
+    "samples": 1000
 }
