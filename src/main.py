@@ -2,6 +2,7 @@ from sudoku_solver.train import train, test, get_model_performance
 from sudoku_solver.config import Hyperparams, check_config
 import sys
 from sudoku_solver.data import SudokuDataloaders, load_kaggle_data
+import torch
 
 if __name__ == "__main__":
 
@@ -11,10 +12,16 @@ if __name__ == "__main__":
     else:
         kwargs = check_config(sys.argv[1])
         params = Hyperparams(**kwargs)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if torch.cuda.is_available():
+        print("Running on GPU", torch.cuda.get_device_name(device))
+    else:
+        print("Running on CPU")
     
     gen_data = SudokuDataloaders(params)
-    model = train(gen_data, params)
-    test(gen_data, model)
+    model = train(gen_data, params, device)
+    test(gen_data, model, device)
     
     # k_data = SudokuDataloaders(params, data=load_kaggle_data(params))
     # model = train(k_data, params, model=model) 

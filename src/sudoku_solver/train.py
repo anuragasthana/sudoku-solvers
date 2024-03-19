@@ -29,7 +29,7 @@ class EarlyStopper:
             self.best_loss = loss
             self.counter = 0
 
-def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None):
+def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module = None):
     print("Training with hyperparameters:")
     print(params)
     
@@ -39,6 +39,7 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
         model = SudokuRNN()
     else:
         model = SudokuTransformer()
+    model = model.to(device)
     
     # Create optimizer and loss function
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
@@ -58,6 +59,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
             optimizer.zero_grad()
             
             # Forward pass
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             outputs = model(inputs)
             
             # Combine x and y dims (1, 2) and swap classes and length (2, 1)
@@ -73,7 +76,7 @@ def train(data: SudokuDataloaders, params: Hyperparams, model: nn.Module = None)
         
         # Get validation accuracy and loss
         # GH Copilot autogen
-        percent_puzzles_solved, percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion)
+        percent_puzzles_solved, percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion, device)
         print(f"Validation accuracy: {percent_correct}%")
         print(f"Validation loss: {ave_val_loss}")
         print(f"Percent puzzles solved: {percent_puzzles_solved}%")
@@ -97,14 +100,14 @@ def get_loss(criterion, labels, outputs):
     loss = criterion(outputs, labels)
     return loss
 
-def test(data: SudokuDataloaders, model: nn.Module):
+def test(data: SudokuDataloaders, model: nn.Module, device: torch.device):
     
-    percent_puzzles_solved, percent_cells_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
-    print(f"Test accuracy: {percent_cells_correct}%")
+    percent_puzzles_solved, percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss(), device)
+    print(f"Test accuracy: {percent_correct}%")
     print(f"Test loss: {ave_test_loss}")
     print(f"Percent puzzles solved: {percent_puzzles_solved}%")
 
-def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module):
+def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module, device: torch.device):
     # Get validation accuracy and loss
     # GH Copilot autogen
     cells_correct = 0
@@ -114,6 +117,8 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     
     with torch.no_grad():
         for inputs, labels in dataloader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
             outputs = model(inputs)
             predicted = torch.argmax(outputs.data, 2)
             

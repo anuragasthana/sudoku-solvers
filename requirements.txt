@@ -1,6 +1,7 @@
 py-sudoku
 numpy
-torch
+# Pytorch variant depends on device
+# torch 
 matplotlib
 tdqm
 transformers
