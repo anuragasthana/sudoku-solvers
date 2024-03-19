@@ -1,4 +1,4 @@
-from sudoku_solver.plot import TestOutput
+from sudoku_solver.plot import EpochResults, Results, TestResult
 from sudoku_solver.validation import validate_board
 from .config import Hyperparams
 from .data import SudokuDataloaders
@@ -38,6 +38,10 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         model = SudokuCNN()
     elif params.model == 'RNN':
         model = SudokuRNN()
+    elif params.model == 'RNNLSTM':
+        model = SudokuRNN(model_type="LSTM")
+    elif params.model == "RNNGRU":
+        model = SudokuRNN(model_type="GRU")
     else:
         model = SudokuTransformer()
     model = model.to(device)
@@ -46,6 +50,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
     optimizer = optim.Adam(model.parameters(), lr=params.lr)
     criterion = nn.CrossEntropyLoss()
     early_stopper = EarlyStopper(params.patience)
+    
+    results: Results = Results(params=params, epochs_output=[], test_output=None)
 
     # Iterate over epochs
     for epoch in range(params.epochs):
@@ -73,7 +79,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
             
             cum_loss += loss.item()
         
-        print(f"Average training loss: {cum_loss/len(data.train)}")
+        training_loss = cum_loss/len(data.train)
+        print(f"Average training loss: {training_loss}")
         
         # Get validation accuracy and loss
         # GH Copilot autogen
@@ -84,6 +91,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         
         print(f"---------------------------------------")
         
+        results.epochs_output.append(EpochResults(test_result=val_output, training_loss=training_loss))
+        
         # Use early stopping
         early_stopper(val_output.ave_loss)
         if early_stopper.early_stop:
@@ -93,7 +102,7 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         # Save model weights after each epoch
         torch.save(model.state_dict(), f"artifacts/models/model_epoch_{epoch}.pth")
         
-    return model
+    return model, results
 
 # Involves weird reshaping
 def get_loss(criterion, labels, outputs):
@@ -101,14 +110,17 @@ def get_loss(criterion, labels, outputs):
     loss = criterion(outputs, labels)
     return loss
 
-def test(data: SudokuDataloaders, model: nn.Module, device: torch.device):
+def test(data: SudokuDataloaders, model: nn.Module, device: torch.device, results: Results):
     
     test_output = get_model_performance(data.test, model, nn.CrossEntropyLoss(), device)
     print(f"Test cell accuracy: {test_output.percent_cells_correct}%")
     print(f"Test loss: {test_output.ave_loss}")
     print(f"Test % boards solved: {test_output.percent_boards_solved}%")
+    
+    if results is not None:
+        results.test_output = test_output
 
-def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module, device: torch.device) -> TestOutput:
+def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module, device: torch.device) -> TestResult:
     # Get validation accuracy and loss
     # GH Copilot autogen
     cells_correct = 0
@@ -138,6 +150,6 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
     percent_cells_correct = 100 * cells_correct / total_puzzles / 81
     percent_puzzles_solved = 100 * puzzles_solved / total_puzzles
 
-    return TestOutput(ave_loss=ave_val_loss, percent_cells_correct=percent_cells_correct, percent_boards_solved=percent_puzzles_solved)
+    return TestResult(ave_loss=ave_val_loss, percent_cells_correct=percent_cells_correct, percent_boards_solved=percent_puzzles_solved)
     # return percent_puzzles_solved, percent_cells_correct, ave_val_loss
     
