@@ -1,7 +1,7 @@
 from sudoku_solver.validation import validate_board
 from .config import Hyperparams
 from .data import SudokuDataloaders
-from .model import SudokuCNN, SudokuTransformer
+from .model import SudokuCNN, SudokuTransformer, SudokuRNN
 from .backtrack_solver import check_board_solved
 
 from torch import nn, optim
@@ -35,6 +35,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
     
     if params.model == 'CNN':
         model = SudokuCNN()
+    elif params.model == 'RNN':
+        model = SudokuRNN()
     else:
         model = SudokuTransformer()
     model = model.to(device)
@@ -118,7 +120,7 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
             inputs = inputs.to(device)
             labels = labels.to(device)
             outputs = model(inputs)
-            _, predicted = torch.max(outputs.data, 2)
+            predicted = torch.argmax(outputs.data, 2)
             
             total_puzzles += labels.size(0)
             cells_correct += (predicted == labels).sum().item()
@@ -132,8 +134,8 @@ def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: n
             val_loss += loss.item()
             
     ave_val_loss = val_loss/len(dataloader)
-    percent_correct = 100 * cells_correct / total_puzzles / 81
+    percent_cells_correct = 100 * cells_correct / total_puzzles / 81
     percent_puzzles_solved = 100 * puzzles_solved / total_puzzles
-    
-    return percent_puzzles_solved, percent_correct, ave_val_loss
+
+    return percent_puzzles_solved, percent_cells_correct, ave_val_loss
     
