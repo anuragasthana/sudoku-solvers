@@ -33,6 +33,9 @@ def create_plots(results: Results):
     plt.ylabel("Training Loss")
     plt.title("Training Loss Per Epoch")
     save_plot("training_loss.png")
+
+    #Clears the plot
+    plt.clf()
     
     # Plot validation loss
     val_loss = [epoch.test_result.ave_loss for epoch in results.epochs_output]
@@ -41,6 +44,8 @@ def create_plots(results: Results):
     plt.ylabel("Validation Loss")
     plt.title("Validation Loss Per Epoch")
     save_plot("validation_loss.png")
+
+    plt.clf()
     
     # Plot validation accuracy
     val_acc = [epoch.test_result.percent_cells_correct for epoch in results.epochs_output]
@@ -49,6 +54,8 @@ def create_plots(results: Results):
     plt.ylabel("Validation Accuracy")
     plt.title("Validation Accuracy Per Epoch")
     save_plot("validation_accuracy.png")
+
+    plt.clf()
     
     # Plot % boards solved
     boards_solved = [epoch.test_result.percent_boards_solved for epoch in results.epochs_output]
@@ -57,6 +64,8 @@ def create_plots(results: Results):
     plt.ylabel("Percent Boards Solved")
     plt.title("Percent Boards Solved Per Epoch")
     save_plot("boards_solved.png")
+
+    plt.clf()
     
     # Plot test loss
     test_loss = results.test_output.ave_loss
@@ -64,6 +73,8 @@ def create_plots(results: Results):
     plt.ylabel("Loss")
     plt.title("Test Loss")
     save_plot("test_loss.png")
+
+    plt.clf()
     
     # Plot test accuracy
     test_acc = results.test_output.percent_cells_correct
@@ -71,6 +82,8 @@ def create_plots(results: Results):
     plt.ylabel("Accuracy")
     plt.title("Test Accuracy")
     save_plot("test_accuracy.png")
+
+    plt.clf()
     
     # Plot % boards solved
     test_boards_solved = results.test_output.percent_boards_solved
@@ -78,5 +91,6 @@ def create_plots(results: Results):
     plt.ylabel("Percent Boards Solved")
     plt.title("Percent Boards Solved")
     save_plot("test_boards_solved.png")
-    
+
+    plt.clf()
     return None
