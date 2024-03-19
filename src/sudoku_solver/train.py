@@ -74,7 +74,7 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         
         # Get validation accuracy and loss
         # GH Copilot autogen
-        percent_puzzles_solved, percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion)
+        percent_puzzles_solved, percent_correct, ave_val_loss = get_model_performance(data.validation, model, criterion, device)
         print(f"Validation accuracy: {percent_correct}%")
         print(f"Validation loss: {ave_val_loss}")
         print(f"Percent puzzles solved: {percent_puzzles_solved}%")
@@ -98,14 +98,14 @@ def get_loss(criterion, labels, outputs):
     loss = criterion(outputs, labels)
     return loss
 
-def test(data: SudokuDataloaders, model: nn.Module):
+def test(data: SudokuDataloaders, model: nn.Module, device: torch.device):
     
-    percent_puzzles_solved, percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss())
+    percent_puzzles_solved, percent_correct, ave_test_loss = get_model_performance(data.test, model, nn.CrossEntropyLoss(), device)
     print(f"Test accuracy: {percent_correct}%")
     print(f"Test loss: {ave_test_loss}")
     print(f"Percent puzzles solved: {percent_puzzles_solved}%")
 
-def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module):
+def get_model_performance(dataloader: Dataloader, model: nn.Module, criterion: nn.Module, device: torch.device):
     # Get validation accuracy and loss
     # GH Copilot autogen
     cells_correct = 0
