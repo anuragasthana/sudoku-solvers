@@ -31,7 +31,7 @@ def create_plots(results: Results):
     plt.plot(training_loss)
     plt.xlabel("Epoch")
     plt.ylabel("Training Loss")
-    plt.title("Training Loss Over Time")
+    plt.title("Training Loss Per Epoch")
     save_plot("training_loss.png")
     
     # Plot validation loss
@@ -39,7 +39,7 @@ def create_plots(results: Results):
     plt.plot(val_loss)
     plt.xlabel("Epoch")
     plt.ylabel("Validation Loss")
-    plt.title("Validation Loss Over Time")
+    plt.title("Validation Loss Per Epoch")
     save_plot("validation_loss.png")
     
     # Plot validation accuracy
@@ -47,15 +47,15 @@ def create_plots(results: Results):
     plt.plot(val_acc)
     plt.xlabel("Epoch")
     plt.ylabel("Validation Accuracy")
-    plt.title("Validation Accuracy Over Time")
+    plt.title("Validation Accuracy Per Epoch")
     save_plot("validation_accuracy.png")
     
     # Plot % boards solved
     boards_solved = [epoch.test_result.percent_boards_solved for epoch in results.epochs_output]
     plt.plot(boards_solved)
     plt.xlabel("Epoch")
-    plt.ylabel("% Boards Solved")
-    plt.title("% Boards Solved Over Time")
+    plt.ylabel("Percent Boards Solved")
+    plt.title("Percent Boards Solved Per Epoch")
     save_plot("boards_solved.png")
     
     # Plot test loss
@@ -74,9 +74,9 @@ def create_plots(results: Results):
     
     # Plot % boards solved
     test_boards_solved = results.test_output.percent_boards_solved
-    plt.bar(["% Boards Solved"], [test_boards_solved])
-    plt.ylabel("% Boards Solved")
-    plt.title("% Boards Solved")
+    plt.bar(["Percent Boards Solved"], [test_boards_solved])
+    plt.ylabel("Percent Boards Solved")
+    plt.title("Percent Boards Solved")
     save_plot("test_boards_solved.png")
     
     return None
