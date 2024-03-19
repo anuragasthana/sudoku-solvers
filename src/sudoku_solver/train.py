@@ -38,6 +38,10 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         model = SudokuCNN()
     elif params.model == 'RNN':
         model = SudokuRNN()
+    elif params.model == 'RNNLSTM':
+        model = SudokuRNN(model_type="LSTM")
+    elif params.model == "RNNGRU":
+        model = SudokuRNN(model_type="GRU")
     else:
         model = SudokuTransformer()
     model = model.to(device)
