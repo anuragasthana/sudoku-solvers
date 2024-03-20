@@ -10,7 +10,7 @@ def validate_board(predicted, inputs):
         
         digits_unchanged = torch_givens_unchanged(predicted, inputs, i)
         
-        if check_board_solved(predicted[i].numpy()) and digits_unchanged:
+        if check_board_solved(predicted[i].cpu().numpy()) and digits_unchanged:
             puzzles_solved += 1
     
     return puzzles_solved

@@ -4,8 +4,8 @@
     "batch_size": 64,
     "early_stopping": true,
     "patience": 5,
-    "samples": 10000,
-    "min_difficulty": 0,
-    "max_difficulty": 1,
-    "model": "CNN"
+    "samples": 1000,
+    "min_difficulty": 0.2,
+    "max_difficulty": 0.8,
+    "model": "Transformer"
 }
