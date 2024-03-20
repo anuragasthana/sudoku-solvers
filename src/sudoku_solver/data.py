@@ -47,10 +47,15 @@ def one_hot_decode(a):
 
 class SudokuDataloaders():
     
-    def __init__(self, params: Hyperparams, data=None, batch_size = 32):
+    def __init__(self, params: Hyperparams, batch_size = 32):
         # put in dataloader to send to main
-        if data is None:
+        
+        if params.dataset == '3m':
+            data = load_kaggle_data(params)
+        elif params.dataset == 'generated':
             data = check_data(params=params)
+        else:
+            raise ValueError(f"Invalid datasource {params.dataset}")
         
         split = split_data(data, split=params.datasplit)
         
@@ -68,14 +73,15 @@ class SudokuDataloaders():
         self.validation = validation
 
 
-def check_data(params, path='data.npz'):
+def check_data(params):
+    path = f"artifacts/puzzles/{params.to_data_filename()}"
     if not os.path.exists(path):
-        generate(params)
+        generate(params, path)
     # put in dataloader to send to main
     return np.load(path, allow_pickle=True)
     
 
-def generate(params: Hyperparams):
+def generate(params: Hyperparams, savepath: str):
     inputs = []
     labels = []
     
@@ -85,7 +91,7 @@ def generate(params: Hyperparams):
         
         solution = puzzle.solve()
         labels.append(np.array(solution.board))
-    np.savez('data.npz', inputs=inputs, labels=labels)
+    np.savez(savepath, inputs=inputs, labels=labels)
     print("Data saved")
 
 # Train, test, validate split

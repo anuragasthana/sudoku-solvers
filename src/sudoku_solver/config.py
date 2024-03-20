@@ -13,13 +13,20 @@ class Hyperparams(BaseModel):
     patience: int = 5
 
     samples: int = 10000
-    min_difficulty: int = 0
-    max_difficulty: int = 1
+    dataset: str = '3m'
+    min_difficulty: float = 0
+    max_difficulty: float = 1
     
     datasplit: list = [0.8, 0.1, 0.1]
     model: str = 'CNN'
     
     # etc. etc. etc.
+    
+    def to_name(self):
+        return f"{self.model}_{self.lr}_{self.epochs}_{self.batch_size}_{self.samples}_{self.min_difficulty}_{self.max_difficulty}"
+
+    def to_data_filename(self):
+        return f"data_{self.samples}_{self.min_difficulty}_{self.max_difficulty}.npz"
 
 def check_config(filename):
     if exists(filename) and filename[-5:] == '.json':

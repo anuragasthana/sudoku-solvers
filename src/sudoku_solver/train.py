@@ -1,3 +1,4 @@
+import os
 from sudoku_solver.plot import EpochResults, Results, TestResult
 from sudoku_solver.validation import validate_board
 from .config import Hyperparams
@@ -100,7 +101,14 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
             break
         
         # Save model weights after each epoch
-        torch.save(model.state_dict(), f"artifacts/models/model_epoch_{epoch}.pth")
+        
+        model_subdir = f"artifacts/models/{params.to_name()}"
+        
+        # Check if this directory exists
+        if not os.path.exists(model_subdir):
+            os.makedirs(model_subdir)
+        
+        torch.save(model.state_dict(), f"{model_subdir}/model_epoch_{epoch}.pth")
         
     return model, results
 
