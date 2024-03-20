@@ -50,12 +50,12 @@ class SudokuDataloaders():
     def __init__(self, params: Hyperparams, batch_size = 32):
         # put in dataloader to send to main
         
-        if params.datasource == '3m':
+        if params.dataset == '3m':
             data = load_kaggle_data(params)
-        elif params.datasource == 'generated':
+        elif params.dataset == 'generated':
             data = check_data(params=params)
         else:
-            raise ValueError(f"Invalid datasource {params.datasource}")
+            raise ValueError(f"Invalid datasource {params.dataset}")
         
         split = split_data(data, split=params.datasplit)
         
