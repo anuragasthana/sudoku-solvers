@@ -13,6 +13,7 @@ class Hyperparams(BaseModel):
     patience: int = 5
 
     samples: int = 10000
+    datasource: str = '3m'
     min_difficulty: float = 0
     max_difficulty: float = 1
     

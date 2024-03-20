@@ -7,6 +7,7 @@ from sudoku_solver.data import SudokuDataloaders, load_kaggle_data
 import torch
 
 def go(device, params):
+    
     gen_data = SudokuDataloaders(params)
     model, results = train(gen_data, params, device)
     test(gen_data, model, device, results)

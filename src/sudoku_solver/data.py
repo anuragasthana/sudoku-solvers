@@ -47,10 +47,15 @@ def one_hot_decode(a):
 
 class SudokuDataloaders():
     
-    def __init__(self, params: Hyperparams, data=None, batch_size = 32):
+    def __init__(self, params: Hyperparams, batch_size = 32):
         # put in dataloader to send to main
-        if data is None:
+        
+        if params.datasource == '3m':
+            data = load_kaggle_data(params)
+        elif params.datasource == 'generated':
             data = check_data(params=params)
+        else:
+            raise ValueError(f"Invalid datasource {params.datasource}")
         
         split = split_data(data, split=params.datasplit)
         
