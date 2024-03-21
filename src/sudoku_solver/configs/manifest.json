@@ -1,5 +1,6 @@
 [
     "cnn/cnn_config1.json",
     "rnn/rnn_config1.json",
+    "gnn/gnn_config1.json",
     "transformers/optimus_prime.json"
 ]
