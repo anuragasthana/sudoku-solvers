@@ -1,3 +1,5 @@
+import torch
+
 from random import randrange
 from sys import maxsize
 from pydantic import BaseModel
@@ -11,6 +13,8 @@ from sudoku_solver.config import Hyperparams
 from typing import List, Tuple, Optional
 
 from typing import List, Optional
+
+from torch_geometric.data import Data
 
 class SudokuDifficulty:
     _empty_cell_value = None
@@ -213,3 +217,40 @@ def load_kaggle_data(params: Hyperparams):
         data = {'inputs': np.array(inputs), 'labels': np.array(labels), 'difficulties': np.array(difficulties)}
         
         return data
+    
+# GPT generated    
+def sudoku_to_graph(puzzle, solution):
+# Assuming puzzle and solution are 9x9 numpy arrays or similar
+    
+    # Node features: One-hot encode the puzzle digits
+    node_features = torch.zeros((81, 10), dtype=torch.float)
+    for index, value in np.ndenumerate(puzzle):
+        node_id = index[0] * 9 + index[1]
+        node_features[node_id, value] = 1  # value is 0 for empty cells
+        
+    # Labels: Flatten the solution to a vector
+    labels = solution.flatten()
+       
+    # Define edges based on Sudoku rules (rows, columns, subgrids)
+    edges = []
+    for i in range(9):
+        for j in range(9):
+            # Row and column connections
+            for k in range(9):
+                if k != j:
+                    edges.append((i*9+j, i*9+k))  # Row
+                if k != i:
+                    edges.append((i*9+j, k*9+j))  # Column
+            
+            # Subgrid connections
+            subgrid_row, subgrid_col = 3 * (i // 3), 3 * (j // 3)
+            for m in range(subgrid_row, subgrid_row + 3):
+                for n in range(subgrid_col, subgrid_col + 3):
+                    if m != i or n != j:
+                        edges.append((i*9+j, m*9+n))
+                            
+    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+        
+    # Create Data object
+    data = Data(x=node_features, edge_index=edge_index, y=labels)
+    return data

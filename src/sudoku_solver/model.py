@@ -2,8 +2,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
 from transformers import ViTConfig, ViTModel
-import torch
+from torch_geometric.nn import GCNConv
+from torch_geometric.data import Data
+import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 
 class SudokuCNN(nn.Module):
@@ -74,6 +77,38 @@ class SudokuTransformer(nn.Module):
         x = x.view(-1, 81, 9)
         return x
     
+class SudokuGNN(nn.Module):
+    def __init__(self, num_node_features):
+        super(SudokuGNN, self).__init__()
+        self.conv1 = GCNConv(num_node_features, 16)
+        self.conv2 = GCNConv(16, 32)
+        self.conv3 = GCNConv(32, 64)
+        self.conv4 = GCNConv(64, 32)
+        self.conv5 = GCNConv(32, 16)
+        self.fc1 = nn.Linear(16, 128)
+        self.fc2 = nn.Linear(128, 81*9)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        
+        x = F.relu(self.conv1(x, edge_index))
+        x = F.dropout(x)
+        x = F.relu(self.conv2(x, edge_index))
+        x = F.dropout(x)
+        x = F.relu(self.conv3(x, edge_index))
+        x = F.dropout(x)
+        x = F.relu(self.conv4(x, edge_index))
+        x = F.dropout(x)
+        x = F.relu(self.conv5(x, edge_index))
+
+        x = x.view(-1, 16) 
+        
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)  
+        
+        return x.view(-1, 81, 9)  
+    
+
 class SudokuRNN(nn.Module):
     def __init__(self, model_type = "RNN", hidden_size=300, num_layers=10):
         super(SudokuRNN, self).__init__()
