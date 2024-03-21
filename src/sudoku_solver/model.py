@@ -49,7 +49,7 @@ class SudokuCNN(nn.Module):
 class SudokuTransformer(nn.Module):
     def __init__(self):
         super(SudokuTransformer, self).__init__()
-        config = ViTConfig(hidden_size=768, 
+        config = ViTConfig(hidden_size=864, 
                            num_hidden_layers=12, 
                            num_attention_heads=12, 
                            num_channels=1,
@@ -60,11 +60,11 @@ class SudokuTransformer(nn.Module):
             nn.Conv1d(82, 1, 1),
             nn.ReLU(),
             nn.Flatten(),
-            nn.Linear(768, 512),
+            nn.Linear(864, 512),
             nn.ReLU(),
             nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Dropout(0.15),
+            nn.Dropout(0.2),
             nn.Linear(256, 512),
             nn.ReLU(),
             nn.Linear(512, 81*9)
