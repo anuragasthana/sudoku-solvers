@@ -83,7 +83,7 @@ def run_manifest(device):
     configs = []
 
     for config_file in config_files:
-        kwargs = check_config("src/sudoku_solver/configs"+config_file)
+        kwargs = check_config("src/sudoku_solver/configs/"+config_file)
         params = Hyperparams(**kwargs)
 
         configs.append(params.model_dump())

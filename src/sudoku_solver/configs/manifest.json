@@ -1,6 +1,5 @@
-// DO NOT REMOVE THIS FILE
 [
-    "/cnn/cnn_config1.json",
-    "/rnn/rnn_config1.json",
-    "/transformers/optimus_prime.json"
+    "cnn/cnn_config1.json",
+    "rnn/rnn_config1.json",
+    "transformers/optimus_prime.json"
 ]
