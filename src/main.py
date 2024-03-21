@@ -27,6 +27,9 @@ def go(device, params, comp = False):
     avg_inference_time = (end-beg)/len(gen_data.test.dataset)
     print(f"Average Inference time for {params.model}: {avg_inference_time} seconds")
     
+    results.training_time = training_time
+    results.avg_inference_time = avg_inference_time
+    
     create_plots(results)
     save_results(results)
 

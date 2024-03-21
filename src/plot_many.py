@@ -1,4 +1,5 @@
 import json
+import time
 
 from matplotlib import pyplot as plt
 from sudoku_solver.plot import Results
@@ -38,10 +39,33 @@ def main():
     plt.legend()
     
     # Save artifacts/plots/validation_accuracy.png
-    plt.savefig('artifacts/plots/validation_accuracy.png')
+    timestamp = int(time.time())
+    plt.savefig(f'artifacts/plots/group_validation_accuracy/{timestamp}.png')
     plt.clf()
         
     
+    # Plot training time
+    models = [res.params.model for res in results]
+    training_times = [res.training_time for res in results]
+    plt.bar(models, training_times)
+    
+    plt.xlabel('Model')
+    plt.ylabel('Training Time (s)')
+    
+    # Save artifacts/plots/training_time.png
+    plt.savefig(f'artifacts/plots/group_training_time/{timestamp}.png')
+    plt.clf()
+    
+    # Plot average inference time
+    avg_inference_times = [res.avg_inference_time for res in results]
+    plt.bar(models, avg_inference_times)
+    
+    plt.xlabel('Model')
+    plt.ylabel('Average Inference Time (s)')
+    
+    # Save artifacts/plots/avg_inference_time.png
+    plt.savefig(f'artifacts/plots/group_ave_inference_time/{timestamp}.png')
+    plt.clf()
     
 
 if __name__ == '__main__':
