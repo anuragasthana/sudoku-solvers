@@ -27,11 +27,23 @@ def go(device, params, comp = False):
     avg_inference_time = (end-beg)/len(gen_data.test.dataset)
     print(f"Average Inference time for {params.model}: {avg_inference_time} seconds")
     
+    results.training_time = training_time
+    results.avg_inference_time = avg_inference_time
+    
     create_plots(results)
+    save_results(results)
 
     if comp:
         return training_time, results.test_output.percent_boards_solved, avg_inference_time
     
+def save_results(results):
+    if not os.path.exists("artifacts/results"):
+        os.makedirs("artifacts/results")
+    
+    fname = f"artifacts/results/{results.params.to_name()}.json"
+    with open(fname, 'w') as file:
+        file.write(results.json())
+
 def run_manifest(device):
     path = None
     for root, dirs, files in os.walk('.'):
@@ -45,6 +57,7 @@ def run_manifest(device):
     file = open(path)
     config_files = json.load(file)
     file.close()
+    
     if type(config_files) is not list:
         print("Invalid JSON Configuration")
         exit(1)
@@ -100,7 +113,7 @@ def run_manifest(device):
 
     pd.DataFrame(configs).to_csv("artifacts/comps/configs.csv")
     comps.to_csv("artifacts/comps/model_comps.csv")
-    
+
     
 if __name__ == "__main__":
 
