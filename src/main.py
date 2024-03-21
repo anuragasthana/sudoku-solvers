@@ -1,5 +1,5 @@
 from sudoku_solver.plot import create_plots
-from sudoku_solver.train import train, test, get_model_performance
+from sudoku_solver.train import train, test, get_model_performance, train_with_curriculum
 from sudoku_solver.config import Hyperparams, check_config
 from sudoku_solver.data import SudokuDataloaders, load_kaggle_data
 from sudoku_solver.backtrack_solver import solve_sudoku
@@ -17,12 +17,15 @@ def go(device, params, comp = False):
     
     gen_data = SudokuDataloaders(params)
     beg = time.time()
-    model, results = train(gen_data, params, device)
+    if (params.curriculum == True):
+        model, results = train_with_curriculum(gen_data, params, device)
+    else:
+        model, results = train(gen_data, params, device)
     end = time.time()
     training_time = end-beg
     print(f"Training time for {params.model}: {training_time} seconds")
     beg = time.time()
-    test(gen_data, model, device, results)
+    test(gen_data, params, model, device, results)
     end = time.time()
     avg_inference_time = (end-beg)/len(gen_data.test.dataset)
     print(f"Average Inference time for {params.model}: {avg_inference_time} seconds")
