@@ -1,0 +1,5 @@
+,Config,Model,Training Time (s),Test Accuracy,Average Inference Time (s)
+0,N/A,Backtracking,0,100,0.007339868783950806
+1,/cnn/cnn_config1.json,CNN,1,2,3.0
+2,/rnn/rnn_config1.json,RNN,1,2,3.0
+3,/transformers/optimus_prime.json,Transformer,1,2,3.0

@@ -61,7 +61,7 @@ class SudokuTransformer(nn.Module):
             nn.ReLU(),
             nn.Linear(512, 256),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Dropout(0.15),
             nn.Linear(256, 512),
             nn.ReLU(),
             nn.Linear(512, 81*9)
