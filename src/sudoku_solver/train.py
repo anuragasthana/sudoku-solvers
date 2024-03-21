@@ -69,6 +69,13 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
         cum_loss = 0
         for minibatch in curriculum_batches:
             inputs, labels, difficulties, graphs = minibatch
+
+            # Convert minibatch elements to tensors
+            inputs = torch.tensor(inputs, dtype=torch.float32).to(device)
+            labels = torch.tensor(labels, dtype=torch.long).to(device)
+            difficulties = torch.tensor(difficulties, dtype=torch.float32).to(device)
+            graphs = torch.tensor(graphs).to(device)
+    
             
             # Zero the parameter gradients
             optimizer.zero_grad()

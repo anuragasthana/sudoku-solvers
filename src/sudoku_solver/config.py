@@ -19,6 +19,8 @@ class Hyperparams(BaseModel):
     
     datasplit: list = [0.8, 0.1, 0.1]
     model: str = 'CNN'
+    curriculum: bool = False
+    num_mini_batches: int = 1000
     
     # etc. etc. etc.
     

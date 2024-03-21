@@ -9,7 +9,7 @@ import random
 from tqdm import tqdm as progress_bar
 
 from sudoku_solver.config import Hyperparams
-from data import *
+from .data import *
 
 
 
@@ -17,14 +17,14 @@ class Curriculum:
     def __init__(self, training_data: DataLoader):
         self.training_data = training_data
         
-    def pacing(self, i, step=20, step_length=10, increase=1.5, starting_percent=0.1):
+    def pacing(self, i, step=20, step_length=1944, increase=1.5, starting_percent=0.1):
         exponent = math.floor(i / step_length)
         value = min(starting_percent * (increase ** exponent), 1) * step
         return value
     
     def curriculum_learning_batches(self, num_mini_batches):
         # Assuming you have train_loader.train.dataset.data
-        data = self.training_data.train.dataset.data
+        data = self.training_data.dataset.data
         # First, zip the data together so you can sort it based on 'difficulties'
         zipped_data = zip(data['inputs'], data['labels'], data['difficulties'], data['graphs'])
         # Sort the zipped data based on 'difficulties' (index 2 in the zipped tuple)
@@ -40,8 +40,8 @@ class Curriculum:
         }
 
         result = []
-        for i in range(1,num_mini_batches+1):
-            size = self.pacing(i)
+        for i in range(1, num_mini_batches+1):
+            size = int(self.pacing(i))  # Convert size to integer
             first_size_entrysets = {
                 'inputs': sorted_dataset['inputs'][:size],
                 'labels': sorted_dataset['labels'][:size],
@@ -50,6 +50,7 @@ class Curriculum:
             }
             mini_batch = self.sampler(first_size_entrysets, len(first_size_entrysets)/10)
             result.append(mini_batch)
+
         #Returns a sequence of minibatches for training procedure
         return result
 
@@ -58,7 +59,7 @@ class Curriculum:
         total_entrysets = len(dataset_dict['inputs'])
 
         # Generate a random sample of N indices without replacement
-        sample_indices = random.sample(range(total_entrysets), N)
+        sample_indices = random.sample(range(total_entrysets), int(N))
 
         # Create a new dictionary containing the sampled entrysets
         sampled_data = {

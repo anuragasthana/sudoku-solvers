@@ -1,12 +1,12 @@
 {
-    "lr": 0.001,
-    "epochs": 10,
-    "batch_size": 64,
-    "early_stopping": true,
-    "patience": 5,
-    "samples": 10,
-    "min_difficulty": 0.2,
-    "max_difficulty": 0.8,
-    "model": "Transformer",
-    "dataset": "generated"
+  "lr": 0.001,
+  "epochs": 10,
+  "batch_size": 64,
+  "early_stopping": true,
+  "patience": 5,
+  "samples": 10,
+  "min_difficulty": 0.2,
+  "max_difficulty": 0.8,
+  "model": "Transformer",
+  "curriculum": false
 }

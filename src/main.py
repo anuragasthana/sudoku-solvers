@@ -18,6 +18,7 @@ def go(device, params, comp = False):
     gen_data = SudokuDataloaders(params)
     beg = time.time()
     if (params.curriculum == True):
+        print("Start curriculum training")
         model, results = train_with_curriculum(gen_data, params, device)
     else:
         model, results = train(gen_data, params, device)
