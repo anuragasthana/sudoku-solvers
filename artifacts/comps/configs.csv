@@ -1,0 +1,4 @@
+,lr,epochs,batch_size,early_stopping,patience,samples,min_difficulty,max_difficulty,datasplit,model
+0,0.001,10,64,True,5,10000,0.0,1.0,"[0.8, 0.1, 0.1]",CNN
+1,0.001,10,64,True,5,1000,0.0,1.0,"[0.8, 0.1, 0.1]",RNN
+2,0.001,10,64,True,5,10000,0.2,0.8,"[0.8, 0.1, 0.1]",Transformer

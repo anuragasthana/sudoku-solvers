@@ -1,5 +1,6 @@
 py-sudoku
 numpy
+pandas
 # Pytorch variant depends on device
 # torch 
 matplotlib

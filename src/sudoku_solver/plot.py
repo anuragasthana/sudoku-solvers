@@ -20,6 +20,9 @@ class Results(BaseModel):
     epochs_output: list[EpochResults]
     test_output: Optional[TestResult] = None
 
+    training_time: Optional[float] = None
+    avg_inference_time: Optional[float] = None
+
 def save_plot(results: Results, filename: str):
     
     plot_dir = f"artifacts/plots/{results.params.to_name()}"
