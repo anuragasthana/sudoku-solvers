@@ -52,7 +52,7 @@ def run_manifest(device):
     comps = pd.DataFrame(columns=["Config", 
                           "Model", 
                           "Training Time (s)", 
-                          "Test Accuracy", 
+                          "Inference % Solved", 
                           "Average Inference Time (s)"])
     
     # Running Backtracking
@@ -90,12 +90,12 @@ def run_manifest(device):
 
         print(f"\n\n{params.model}: {config_file}\n\n")
 
-        training_time, test_acc, avg_inference_time = go(device, params, True)
+        training_time, inference_percent_solved, avg_inference_time = go(device, params, True)
 
         comps.loc[len(comps.index)] = [config_file, 
                                        params.model, 
                                        training_time, 
-                                       test_acc, 
+                                       inference_percent_solved, 
                                        avg_inference_time]
 
     pd.DataFrame(configs).to_csv("artifacts/comps/configs.csv")
