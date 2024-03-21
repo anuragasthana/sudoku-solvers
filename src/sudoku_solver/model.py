@@ -2,7 +2,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torch import nn
 from transformers import ViTConfig, ViTModel
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, GraphConv
 from torch_geometric.data import Data
 import torch.nn as nn
 import torch.nn.functional as F
@@ -78,34 +78,56 @@ class SudokuTransformer(nn.Module):
         return x
     
 class SudokuGNN(nn.Module):
-    def __init__(self, num_node_features):
+    def __init__(self, num_node_features=10):
         super(SudokuGNN, self).__init__()
-        self.conv1 = GCNConv(num_node_features, 16)
+        self.conv1 = GCNConv(in_channels=num_node_features, out_channels=16)
         self.conv2 = GCNConv(16, 32)
         self.conv3 = GCNConv(32, 64)
         self.conv4 = GCNConv(64, 32)
         self.conv5 = GCNConv(32, 16)
-        self.fc1 = nn.Linear(16, 128)
-        self.fc2 = nn.Linear(128, 81*9)
+        self.fc1 = nn.Linear(16, 16)
+        self.fc2 = nn.Linear(16, 9)
 
     def forward(self, data):
-        x, edge_index = data.x, data.edge_index
+        #Here data is a bit different - takes in graphs - data has keys (['x', 'edge_index', 'y'])
+        x = data['x']
+        edge_index = data['edge_index']
+
+        # Assuming edge_index has shape [batch_size, 2, num_edges]
+        # Reshape edge_index to match the expected format [2, num_edges]
+
+        edge_index = edge_index.permute(1, 2, 0).reshape(2, -1)
         
+        # print("START")
+        # print(x.shape)
         x = F.relu(self.conv1(x, edge_index))
+        # print(x.shape)
         x = F.dropout(x)
+        # print(x.shape)
         x = F.relu(self.conv2(x, edge_index))
+        # print(x.shape)
         x = F.dropout(x)
+        # print(x.shape)
         x = F.relu(self.conv3(x, edge_index))
+        # print(x.shape)
         x = F.dropout(x)
+        # print(x.shape)
         x = F.relu(self.conv4(x, edge_index))
+        # print(x.shape)
         x = F.dropout(x)
+        # print(x.shape)
         x = F.relu(self.conv5(x, edge_index))
+        # print(x.shape)
 
         x = x.view(-1, 16) 
+        # print(x.shape)
         
         x = F.relu(self.fc1(x))
-        x = self.fc2(x)  
-        
+        # print(x.shape)
+        x = self.fc2(x)
+        # print(x.shape)  
+        # print(x.view(-1, 81, 9).shape)
+        # exit()
         return x.view(-1, 81, 9)  
     
 

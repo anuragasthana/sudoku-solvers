@@ -1,6 +1,6 @@
 import os
 from sudoku_solver.plot import create_plots
-from sudoku_solver.train import train, test, get_model_performance
+from sudoku_solver.train import train, test, get_model_performance, train_with_curriculum
 from sudoku_solver.config import Hyperparams, check_config
 import sys
 from sudoku_solver.data import SudokuDataloaders, load_kaggle_data
@@ -9,8 +9,11 @@ import torch
 def go(device, params):
     
     gen_data = SudokuDataloaders(params)
-    model, results = train(gen_data, params, device)
-    test(gen_data, model, device, results)
+    if (params.curriculum == True):
+        model, results = train_with_curriculum(gen_data, params, device)
+    else:
+        model, results = train(gen_data, params, device)
+    test(gen_data, params, model, device, results)
     
     create_plots(results)
     

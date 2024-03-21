@@ -1,0 +1,13 @@
+{
+  "lr": 0.001,
+  "epochs": 20,
+  "batch_size": 64,
+  "early_stopping": true,
+  "patience": 5,
+  "samples": 1000,
+  "min_difficulty": 0,
+  "max_difficulty": 1,
+  "model": "GNN",
+  "curriculum": true,
+  "num_mini_batches": 100
+}

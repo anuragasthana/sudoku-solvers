@@ -5,6 +5,7 @@ numpy
 matplotlib
 tdqm
 transformers
+torch_geometric
 
 pytest
 pydantic

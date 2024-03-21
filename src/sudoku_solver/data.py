@@ -78,17 +78,23 @@ class SudokuDataset(Dataset):
         
         assert data['inputs'].shape[1:] == (9, 9), "Inputs must be 9x9"
         assert data['labels'].shape[1:] == (9, 9), "Labels must be 9x9"
-        
+        assert data['graphs'][0]['edge_index'].shape == (2, 1944), "Edge Index Shape must be 2x1944"
+
         # Replace None with 0 in inputs
         inputs = data['inputs'].copy()
         inputs[inputs == None] = 0
         inputs = inputs.astype(np.float32)
         
         labels = data['labels'].astype(np.int64)
-        # labels = one_hot_encode(labels)
         
+        difficulties = data['difficulties']
+        graphs = data['graphs']
+        
+        self.data = data
         self.inputs = inputs
         self.labels = labels
+        self.difficulties = difficulties
+        self.graphs = graphs
         
     def __len__(self):
         return len(self.inputs)
@@ -97,7 +103,10 @@ class SudokuDataset(Dataset):
         labels = self.labels[idx]-1
         labels = labels.reshape(-1)
         
-        return self.inputs[idx], labels
+        inputs = self.inputs[idx]
+        difficulties = self.difficulties[idx]
+        graphs = self.graphs[idx]
+        return inputs, labels, difficulties, graphs
 
 # https://stackoverflow.com/questions/36960320/convert-a-2d-matrix-to-a-3d-one-hot-matrix-numpy
 def one_hot_encode(a, n_cat = 9):
@@ -119,13 +128,12 @@ class SudokuDataloaders():
             'inputs': np.concatenate([kaggle_data['inputs'], generated_data['inputs']]),
             'labels': np.concatenate([kaggle_data['labels'], generated_data['labels']]),
             'difficulties': np.concatenate([kaggle_data['difficulties'], generated_data['difficulties']]),
+            'graphs': np.concatenate([kaggle_data['graphs'], generated_data['graphs']]),
         }
         #elif params.dataset == 'generated':
         #    data = check_data(params=params)
         #else:
-        #    raise ValueError(f"Invalid datasource {params.dataset}")
-        
-        
+        #    raise ValueError(f"Invalid datasource {params.dataset}")       
         split = split_data(data, split=params.datasplit)
         
         train = DataLoader(SudokuDataset(split['train']), batch_size=batch_size, shuffle=True)
@@ -154,6 +162,7 @@ def generate(params: Hyperparams, savepath: str):
     inputs = []
     labels = []
     difficulties = []
+    graphs = []
     
     for _, _ in progress_bar(enumerate(range(params.samples)), total=params.samples, desc="Generating data"):
         puzzle = Sudoku(3).difficulty(np.random.uniform(params.min_difficulty, params.max_difficulty))
@@ -167,27 +176,56 @@ def generate(params: Hyperparams, savepath: str):
         difficulty = sudoku_difficulty.calculate_difficulty()
         difficulties.append(difficulty)
 
-    np.savez(savepath, inputs=inputs, labels=labels, difficulties=difficulties)
+        graph = sudoku_to_graph(puzzle.board, solution.board)
+        graphs.append(graph)
+
+    # Convert graphs to a format suitable for saving
+    graph_data = []
+    for graph in graphs:
+        graph_dict = {
+            'x': graph.x.numpy(),
+            'edge_index': graph.edge_index.numpy(),
+            'y': graph.y
+        }
+        graph_data.append(graph_dict)
+
+    np.savez(savepath, inputs=inputs, labels=labels, difficulties=difficulties, graphs=graph_data)
     print("Data saved")
 
 # Train, test, validate split
-def split_data(data, split = [0.8, 0.1, 0.1]):
-    
+def split_data(data, split=[0.8, 0.1, 0.1]):
     assert len(split) == 3, "Split must be a list of 3 values"
     assert sum(split) == 1, "Split values must sum to 1"
     
     # Split into train, test, and validation sets
     o = {}
-    
     total = len(data['inputs'])
     train = int(total * split[0])
     test = int(total * split[1])
     
-    o['train'] = {'inputs': data['inputs'][:train], 'labels': data['labels'][:train]}
-    o['test'] = {'inputs': data['inputs'][train:train+test], 'labels': data['labels'][train:train+test]}
-    o['validation'] = {'inputs': data['inputs'][train+test:], 'labels': data['labels'][train+test:]}
+    o['train'] = {
+        'inputs': data['inputs'][:train],
+        'labels': data['labels'][:train],
+        'difficulties': data['difficulties'][:train],
+        'graphs': data['graphs'][:train]
+    }
+    
+    o['test'] = {
+        'inputs': data['inputs'][train:train+test],
+        'labels': data['labels'][train:train+test],
+        'difficulties': data['difficulties'][train:train+test],
+        'graphs': data['graphs'][train:train+test]
+    }
+    
+    o['validation'] = {
+        'inputs': data['inputs'][train+test:],
+        'labels': data['labels'][train+test:],
+        'difficulties': data['difficulties'][train+test:],
+        'graphs': data['graphs'][train+test:]
+    }
     
     return o
+
 
 def load_kaggle_data(params: Hyperparams):
     with open('artifacts/puzzles/sudoku-3m.csv') as f:
@@ -198,6 +236,7 @@ def load_kaggle_data(params: Hyperparams):
         inputs = []
         labels = []
         difficulties = []
+        graphs = []
         
         for line in puzzles[:params.samples]:
             line = line.strip().split(',')
@@ -209,14 +248,23 @@ def load_kaggle_data(params: Hyperparams):
             #Calculate curriculum difficulty through py-sudoku (replicating 3m difficulty values is difficult)
             sudoku_difficulty = SudokuDifficulty(width=3, height=3, board=input)
             difficulty = sudoku_difficulty.calculate_difficulty()
+            graph = sudoku_to_graph(input, label)
 
+            # Convert graph to a dictionary
+            graph_dict = {
+                'x': graph.x.numpy(),
+                'edge_index': graph.edge_index.numpy(),
+                'y': graph.y
+            }
             inputs.append(input)
             labels.append(label)
             difficulties.append(difficulty)
+            graphs.append(graph_dict)
         
-        data = {'inputs': np.array(inputs), 'labels': np.array(labels), 'difficulties': np.array(difficulties)}
+        data = {'inputs': np.array(inputs), 'labels': np.array(labels), 'difficulties': np.array(difficulties), 'graphs': graphs}
         
         return data
+
     
 # GPT generated    
 def sudoku_to_graph(puzzle, solution):
@@ -229,7 +277,8 @@ def sudoku_to_graph(puzzle, solution):
         node_features[node_id, value] = 1  # value is 0 for empty cells
         
     # Labels: Flatten the solution to a vector
-    labels = solution.flatten()
+    #print(solution)
+    labels = solution#.flatten()
        
     # Define edges based on Sudoku rules (rows, columns, subgrids)
     edges = []
@@ -249,8 +298,7 @@ def sudoku_to_graph(puzzle, solution):
                     if m != i or n != j:
                         edges.append((i*9+j, m*9+n))
                             
-    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
-        
+    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()  
     # Create Data object
     data = Data(x=node_features, edge_index=edge_index, y=labels)
     return data
