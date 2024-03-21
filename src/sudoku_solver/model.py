@@ -83,8 +83,8 @@ class SudokuGNN(nn.Module):
         self.conv3 = GCNConv(32, 64)
         self.conv4 = GCNConv(64, 32)
         self.conv5 = GCNConv(32, 16)
-        self.fc1 = nn.Linear(16, 16)
-        self.fc2 = nn.Linear(16, 9)
+        self.fc1 = nn.Linear(16, 128)
+        self.fc2 = nn.Linear(128, 9)
 
     def forward(self, data):
         #Here data is a bit different - takes in graphs - data has keys (['x', 'edge_index', 'y'])
