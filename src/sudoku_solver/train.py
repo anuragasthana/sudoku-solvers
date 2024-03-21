@@ -84,7 +84,6 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
         print(f"Average training loss: {training_loss}")
         
         # Get validation accuracy and loss
-        # GH Copilot autogen
         val_output = get_model_performance(data.validation, model, criterion, device)
         print(f"Validation cell accuracy: {val_output.percent_cells_correct}%")
         print(f"Validation loss: {val_output.ave_loss}")

@@ -14,9 +14,7 @@ class SudokuCNN(nn.Module):
         super(SudokuCNN, self).__init__()
         
         # Create sample layers
-        # Ref: Github Copilot (autogen)
-        
-        # TODO: Note that this ref model outputs 81 values! It is NOT one hot softmax!
+        # Ref: Github Copilot (autogen) 
         
         layers = []
         layers.append(nn.Conv2d(1, 16, 3, padding=1))
