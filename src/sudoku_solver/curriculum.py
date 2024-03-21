@@ -17,10 +17,10 @@ class Curriculum:
     def __init__(self, training_data: DataLoader):
         self.training_data = training_data
         
-    def pacing(self, i, step=20, step_length=1944, increase=1.5, starting_percent=0.1):
-        exponent = math.floor(i / step_length)
-        value = min(starting_percent * (increase ** exponent), 1) * step
-        return value
+    # def pacing(self, i, step=20, step_length=1944, increase=1.5, starting_percent=0.1):
+    #     exponent = math.floor(i / step_length)
+    #     value = min(starting_percent * (increase ** exponent), 1) * step
+    #     return value
     
     def curriculum_learning_batches(self, num_mini_batches):
         # Assuming you have train_loader.train.dataset.data
@@ -41,27 +41,26 @@ class Curriculum:
 
         result = []
         for i in range(1, num_mini_batches+1):
-            size = int(self.pacing(i))  # Convert size to integer
+            size = num_mini_batches*200  # Convert size to integer
             first_size_entrysets = {
                 'inputs': sorted_dataset['inputs'][:size],
                 'labels': sorted_dataset['labels'][:size],
                 'difficulties': sorted_dataset['difficulties'][:size],
                 'graphs': sorted_dataset['graphs'][:size]
             }
-            mini_batch = self.sampler(first_size_entrysets, len(first_size_entrysets)/10)
+            mini_batch = self.sampler(first_size_entrysets)
             result.append(mini_batch)
-
         #Returns a sequence of minibatches for training procedure
         return result
 
-    def sampler(self, dataset_dict, N):
+    def sampler(self, dataset_dict):
         # Get the total number of entrysets in the dictionary
         total_entrysets = len(dataset_dict['inputs'])
-
+        print(total_entrysets)
         # Generate a random sample of N indices without replacement
-        sample_indices = random.sample(range(total_entrysets), int(N))
-
-        # Create a new dictionary containing the sampled entrysets
+        sample_indices = random.sample(range(total_entrysets), 200)
+        
+        # # Create a new dictionary containing the sampled entrysets
         sampled_data = {
             'inputs': [dataset_dict['inputs'][i] for i in sample_indices],
             'labels': [dataset_dict['labels'][i] for i in sample_indices],

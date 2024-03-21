@@ -57,8 +57,12 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
     
     results: Results = Results(params=params, epochs_output=[], test_output=None)
     
+    # print("DATA TRAIN")
+    # print(data.train.dataset.data)
+    # print(data.train)
+    # exit()
     # Get curriculum learning batches
-    curriculum = Curriculum(data.train)  # Assuming you have defined pacing_func
+    curriculum = Curriculum(data.train) 
     curriculum_batches = curriculum.curriculum_learning_batches(params.num_mini_batches)
     
     # Iterate over epochs
@@ -69,11 +73,10 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
         cum_loss = 0
         for minibatch in curriculum_batches:
             inputs, labels, difficulties, graphs = minibatch
-
             # Convert minibatch elements to tensors
-            inputs = torch.tensor(inputs, dtype=torch.float32).to(device)
-            labels = torch.tensor(labels, dtype=torch.long).to(device)
-            difficulties = torch.tensor(difficulties, dtype=torch.float32).to(device)
+            inputs = torch.tensor(inputs).to(device)
+            labels = torch.tensor(labels).to(device)
+            difficulties = torch.tensor(difficulties).to(device)
             graphs = torch.tensor(graphs).to(device)
     
             

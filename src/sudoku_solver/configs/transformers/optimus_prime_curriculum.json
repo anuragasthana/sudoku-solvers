@@ -9,5 +9,5 @@
   "max_difficulty": 1,
   "model": "Transformer",
   "curriculum": true,
-  "num_mini_batches": 40000
+  "num_mini_batches": 100
 }
