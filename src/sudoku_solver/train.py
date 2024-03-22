@@ -83,24 +83,6 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
             labels = torch.tensor(np.array(minibatch['labels'], dtype=np.int64))
         
             difficulties = torch.tensor(np.array(minibatch['difficulties'], dtype=np.float32))
-
-            #graphs = minibatch['graphs']
-            graph_list = []
-
-            # Iterate over each graph dictionary
-            for graph_data in minibatch['graphs']:
-                x = torch.tensor(graph_data['x'], dtype=torch.float32)
-                edge_index = torch.tensor(graph_data['edge_index'], dtype=torch.long)
-                y = torch.tensor(graph_data['y'], dtype=torch.long)
-                
-                # Combine the tensors into a single data object
-                data = Data(x=x, edge_index=edge_index, y=y)
-                
-                # Add the data object to a list
-                graph_list.append(data)
-
-            # Batch the list of data objects
-            graphs = Batch.from_data_list(graph_list).to(device)
             
             #graphs = torch.tensor(np.array(minibatch['graphs']))
     
@@ -112,9 +94,25 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
             inputs = inputs.to(device)
             labels = labels.to(device)
             difficulties = difficulties.to(device)
-            graphs = graphs.to(device)
-            
+
             if (params.model == "GNN"):
+                #graphs = minibatch['graphs']
+                graph_list = []
+
+                # Iterate over each graph dictionary
+                for graph_data in minibatch['graphs']:
+                    x = torch.tensor(graph_data['x'], dtype=torch.float32)
+                    edge_index = torch.tensor(graph_data['edge_index'], dtype=torch.long)
+                    y = torch.tensor(graph_data['y'], dtype=torch.long)
+                    
+                    # Combine the tensors into a single data object
+                    data = Data(x=x, edge_index=edge_index, y=y)
+                    
+                    # Add the data object to a list
+                    graph_list.append(data)
+
+                # Batch the list of data objects
+                graphs = Batch.from_data_list(graph_list).to(device)
                 outputs = model(graphs)
             else:
                 outputs = model(inputs)
@@ -195,10 +193,8 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
             inputs = inputs.to(device)
             labels = labels.to(device)
             difficulties = difficulties.to(device)
+            
 
-            #TODO: Move Graphs to Device - Some Starter Code Below - Doesn't fully work yet
-            print("TODO: Move Graphs to Device - Some Starter Code Below - Doesn't fully work yet")
-            raise NotImplementedError
             # graph_list = []
 
             # Iterate over each graph dictionary
@@ -219,6 +215,16 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
             #graphs = Batch.from_data_list(graph_list).to(device)
 
             if (params.model == "GNN"):
+                graph_list = []
+
+                # Combine the tensors into a single data object
+                data = Data(x=graphs['x'], edge_index=graphs['edge_index'], y=graphs['y'])
+                    
+                # Add the data object to a list
+                graph_list.append(data)
+
+                # Batch the list of data objects
+                graphs = Batch.from_data_list(graph_list).to(device)
                 outputs = model(graphs)
             else:
                 outputs = model(inputs)
