@@ -96,36 +96,21 @@ class SudokuGNN(nn.Module):
 
         edge_index = edge_index.permute(1, 2, 0).reshape(2, -1)
         
-        # print("START")
-        # print(x.shape)
         x = F.relu(self.conv1(x, edge_index))
-        # print(x.shape)
         x = F.dropout(x)
-        # print(x.shape)
         x = F.relu(self.conv2(x, edge_index))
-        # print(x.shape)
         x = F.dropout(x)
-        # print(x.shape)
         x = F.relu(self.conv3(x, edge_index))
-        # print(x.shape)
         x = F.dropout(x)
-        # print(x.shape)
         x = F.relu(self.conv4(x, edge_index))
-        # print(x.shape)
         x = F.dropout(x)
-        # print(x.shape)
         x = F.relu(self.conv5(x, edge_index))
-        # print(x.shape)
 
         x = x.view(-1, 16) 
-        # print(x.shape)
         
         x = F.relu(self.fc1(x))
-        # print(x.shape)
         x = self.fc2(x)
-        # print(x.shape)  
-        # print(x.view(-1, 81, 9).shape)
-        # exit()
+
         return x.view(-1, 81, 9)  
     
 

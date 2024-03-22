@@ -9,8 +9,10 @@ from .curriculum import Curriculum
 
 from torch import nn, optim
 from torch.utils.data import DataLoader as Dataloader
+import numpy as np
 import torch
 from tqdm import tqdm as progress_bar
+from torch_geometric.data import Data, Batch
 
 
 # GH Copilot autogen
@@ -57,10 +59,6 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
     
     results: Results = Results(params=params, epochs_output=[], test_output=None)
     
-    # print("DATA TRAIN")
-    # print(data.train.dataset.data)
-    # print(data.train)
-    # exit()
     # Get curriculum learning batches
     curriculum = Curriculum(data.train) 
     curriculum_batches = curriculum.curriculum_learning_batches(params.num_mini_batches)
@@ -72,12 +70,39 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
         # Iterate over curriculum learning batches
         cum_loss = 0
         for minibatch in curriculum_batches:
-            inputs, labels, difficulties, graphs = minibatch
-            # Convert minibatch elements to tensors
-            inputs = torch.tensor(inputs).to(device)
-            labels = torch.tensor(labels).to(device)
-            difficulties = torch.tensor(difficulties).to(device)
-            graphs = torch.tensor(graphs).to(device)
+
+            # Replace None with 0 in inputs
+            inputs = minibatch['inputs'].copy()
+
+            # Preprocess inputs to ensure consistency
+            inputs = [[[0 if item is None else item for item in row] for row in grid] for grid in inputs]
+
+            # Convert processed inputs to NumPy array
+            inputs = torch.tensor(np.array(inputs, dtype=np.float32))
+        
+            labels = torch.tensor(np.array(minibatch['labels'], dtype=np.int64))
+        
+            difficulties = torch.tensor(np.array(minibatch['difficulties'], dtype=np.float32))
+
+            #graphs = minibatch['graphs']
+            graph_list = []
+
+            # Iterate over each graph dictionary
+            for graph_data in minibatch['graphs']:
+                x = torch.tensor(graph_data['x'], dtype=torch.float32)
+                edge_index = torch.tensor(graph_data['edge_index'], dtype=torch.long)
+                y = torch.tensor(graph_data['y'], dtype=torch.long)
+                
+                # Combine the tensors into a single data object
+                data = Data(x=x, edge_index=edge_index, y=y)
+                
+                # Add the data object to a list
+                graph_list.append(data)
+
+            # Batch the list of data objects
+            graphs = Batch.from_data_list(graph_list).to(device)
+            
+            #graphs = torch.tensor(np.array(minibatch['graphs']))
     
             
             # Zero the parameter gradients
@@ -86,6 +111,9 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
             # Forward pass
             inputs = inputs.to(device)
             labels = labels.to(device)
+            difficulties = difficulties.to(device)
+            graphs = graphs.to(device)
+            
             if (params.model == "GNN"):
                 outputs = model(graphs)
             else:
@@ -166,6 +194,30 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
             # Forward pass
             inputs = inputs.to(device)
             labels = labels.to(device)
+            difficulties = difficulties.to(device)
+
+            #TODO: Move Graphs to Device - Some Starter Code Below - Doesn't fully work yet
+            print("TODO: Move Graphs to Device - Some Starter Code Below - Doesn't fully work yet")
+            raise NotImplementedError
+            # graph_list = []
+
+            # Iterate over each graph dictionary
+            # for graph_data in graphs:
+            #     print(graph_data)
+            #     exit()
+            #     x = torch.tensor(graph_data['x'], dtype=torch.float32)
+            #     edge_index = torch.tensor(graph_data['edge_index'], dtype=torch.long)
+            #     y = torch.tensor(graph_data['y'], dtype=torch.long)
+                
+            #     # Combine the tensors into a single data object
+            #     data = Data(x=x, edge_index=edge_index, y=y)
+                
+            #     # Add the data object to a list
+            #     graph_list.append(data)
+
+            # Batch the list of data objects
+            #graphs = Batch.from_data_list(graph_list).to(device)
+
             if (params.model == "GNN"):
                 outputs = model(graphs)
             else:
