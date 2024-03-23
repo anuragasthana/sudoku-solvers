@@ -41,7 +41,7 @@ class Curriculum:
 
         result = []
         for i in range(1, num_mini_batches+1):
-            size = num_mini_batches*200  # Convert size to integer
+            size = i*200  # Convert size to integer
             first_size_entrysets = {
                 'inputs': sorted_dataset['inputs'][:size],
                 'labels': sorted_dataset['labels'][:size],
