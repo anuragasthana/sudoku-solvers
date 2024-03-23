@@ -106,10 +106,10 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
                     y = torch.tensor(graph_data['y'], dtype=torch.long)
                     
                     # Combine the tensors into a single data object
-                    data = Data(x=x, edge_index=edge_index, y=y)
+                    graph_data_obj = Data(x=x, edge_index=edge_index, y=y)
                     
                     # Add the data object to a list
-                    graph_list.append(data)
+                    graph_list.append(graph_data_obj)
 
                 # Batch the list of data objects
                 graphs = Batch.from_data_list(graph_list).to(device)
@@ -218,10 +218,10 @@ def train(data: SudokuDataloaders, params: Hyperparams, device, model: nn.Module
                 graph_list = []
 
                 # Combine the tensors into a single data object
-                data = Data(x=graphs['x'], edge_index=graphs['edge_index'], y=graphs['y'])
+                graph_data = Data(x=graphs['x'], edge_index=graphs['edge_index'], y=graphs['y'])
                     
                 # Add the data object to a list
-                graph_list.append(data)
+                graph_list.append(graph_data)
 
                 # Batch the list of data objects
                 graphs = Batch.from_data_list(graph_list).to(device)
