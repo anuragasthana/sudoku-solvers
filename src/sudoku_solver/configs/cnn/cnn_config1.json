@@ -8,5 +8,5 @@
   "min_difficulty": 0,
   "max_difficulty": 1,
   "model": "CNN",
-  "curriculum": false
+  "curriculum": true
 }
