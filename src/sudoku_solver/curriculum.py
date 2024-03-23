@@ -56,7 +56,7 @@ class Curriculum:
     def sampler(self, dataset_dict):
         # Get the total number of entrysets in the dictionary
         total_entrysets = len(dataset_dict['inputs'])
-        print(total_entrysets)
+        #print(total_entrysets)
         # Generate a random sample of N indices without replacement
         sample_indices = random.sample(range(total_entrysets), 200)
         

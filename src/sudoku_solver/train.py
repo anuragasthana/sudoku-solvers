@@ -93,6 +93,7 @@ def train_with_curriculum(data: SudokuDataloaders, params: Hyperparams, device, 
             # Forward pass
             inputs = inputs.to(device)
             labels = labels.to(device)
+            labels = labels.reshape(-1, 81)
             difficulties = difficulties.to(device)
 
             if (params.model == "GNN"):
