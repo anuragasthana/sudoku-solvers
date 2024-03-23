@@ -22,7 +22,14 @@ class Curriculum:
     #     value = min(starting_percent * (increase ** exponent), 1) * step
     #     return value
     
-    def curriculum_learning_batches(self, num_mini_batches):
+    
+    def exponential_pacing(self, curr_stage, total_stage, lambda_rate=0.1):
+        stage_percent = (curr_stage + 1) / total_stage
+        proportion = 1 - np.exp(-lambda_rate*stage_percent)
+        subset_size = int(proportion*len(self.training_data.dataset.data))
+        return subset_size
+    
+    def curriculum_learning_batches(self, num_mini_batches, method='linear'):
         # Assuming you have train_loader.train.dataset.data
         data = self.training_data.dataset.data
         # First, zip the data together so you can sort it based on 'difficulties'
@@ -41,24 +48,29 @@ class Curriculum:
 
         result = []
         for i in range(1, num_mini_batches+1):
-            size = i*200  # Convert size to integer
+            mini_batch_size = math.ceil(len(sorted_dataset['inputs']) // num_mini_batches)
+            if method == 'linear':
+                size = num_mini_batches*mini_batch_size  # Convert size to integer
+            else:
+                size = self.exponential_pacing(i, num_mini_batches+1)
+            size = num_mini_batches*mini_batch_size  # Convert size to integer
             first_size_entrysets = {
                 'inputs': sorted_dataset['inputs'][:size],
                 'labels': sorted_dataset['labels'][:size],
                 'difficulties': sorted_dataset['difficulties'][:size],
                 'graphs': sorted_dataset['graphs'][:size]
             }
-            mini_batch = self.sampler(first_size_entrysets)
+            mini_batch = self.sampler(first_size_entrysets, mini_batch_size)
             result.append(mini_batch)
         #Returns a sequence of minibatches for training procedure
         return result
 
-    def sampler(self, dataset_dict):
+    def sampler(self, dataset_dict, batch_size):
         # Get the total number of entrysets in the dictionary
         total_entrysets = len(dataset_dict['inputs'])
         print(total_entrysets)
         # Generate a random sample of N indices without replacement
-        sample_indices = random.sample(range(total_entrysets), 200)
+        sample_indices = random.sample(range(total_entrysets), batch_size)
         
         # # Create a new dictionary containing the sampled entrysets
         sampled_data = {

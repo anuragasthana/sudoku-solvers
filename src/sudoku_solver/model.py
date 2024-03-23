@@ -83,13 +83,13 @@ class SudokuGNN(nn.Module):
         self.conv3 = GCNConv(32, 64)
         self.conv4 = GCNConv(64, 32)
         self.conv5 = GCNConv(32, 16)
-        self.fc1 = nn.Linear(16, 128)
-        self.fc2 = nn.Linear(128, 9)
+        self.fc1 = nn.Linear(16, 9)
+        # self.fc2 = nn.Linear(128, 9)
 
     def forward(self, data):
         #Here data is a bit different - takes in graphs - data has keys (['x', 'edge_index', 'y'])
         x = data['x']
-        edge_index = data['edge_index']
+        edge_index = data['edge_index'].to(x.device)
 
         # Assuming edge_index has shape [batch_size, 2, num_edges]
         # Reshape edge_index to match the expected format [2, num_edges]
@@ -97,19 +97,19 @@ class SudokuGNN(nn.Module):
         edge_index = edge_index.permute(1, 2, 0).reshape(2, -1)
         
         x = F.relu(self.conv1(x, edge_index))
-        x = F.dropout(x)
+        # x = F.dropout(x)
         x = F.relu(self.conv2(x, edge_index))
-        x = F.dropout(x)
+        # x = F.dropout(x)
         x = F.relu(self.conv3(x, edge_index))
-        x = F.dropout(x)
+        # x = F.dropout(x)
         x = F.relu(self.conv4(x, edge_index))
-        x = F.dropout(x)
+        # x = F.dropout(x)
         x = F.relu(self.conv5(x, edge_index))
 
         x = x.view(-1, 16) 
         
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        # x = F.relu(self.fc1(x))
+        x = self.fc1(x)
 
         return x.view(-1, 81, 9)  
     
